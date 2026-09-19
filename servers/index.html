@@ -97,7 +97,7 @@
   }
   .search-bar input:focus { border-color: var(--accent); }
 
-  .main > div {
+  #listView, #detailView {
     flex: 1;
     min-height: 0;
     display: flex;
@@ -163,7 +163,7 @@
     overflow-y: auto;
     padding: 24px;
   }
-  .detail-view.show { display: block; }
+  .detail-view.show { display: flex; }
   .back-btn {
     background: none;
     border: 1px solid var(--border);
