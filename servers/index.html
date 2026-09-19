@@ -305,7 +305,7 @@ function renderList(filter) {
   }
   list.innerHTML = filtered.map(s => `
     <div class="server-card" onclick="showDetail('${s.entityId}')">
-      <img src="${s.titleImageUrl || ''}" loading="lazy" onerror="this.style.display='none'">
+      <img src="${s.titleImageUrl || ''}" onerror="this.style.display='none'">
       <div class="info">
         <h3>${s.name || '未命名'}</h3>
         <div class="meta">
