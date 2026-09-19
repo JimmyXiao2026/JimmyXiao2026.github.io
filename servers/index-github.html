@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exbox</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --sidebar-bg: #16213e;
+    --border: #0f3460;
+    --card-bg: #16213e;
+    --text: #eee;
+    --text-dim: #889;
+    --accent: #0f3460;
+    --hover: #1a5a9e;
+  }
+  [data-theme="light"] {
+    --bg: #f0f2f5;
+    --sidebar-bg: #ffffff;
+    --border: #d0d7de;
+    --card-bg: #ffffff;
+    --text: #222;
+    --text-dim: #666;
+    --accent: #4a9eff;
+    --hover: #3a8eef;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .sidebar {
+    width: 200px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar h2 {
+    font-size: 18px;
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .sidebar .nav-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: background 0.15s;
+  }
+  .sidebar .nav-item:hover { background: var(--accent); color: #fff; }
+  .sidebar .nav-item.active { background: var(--accent); color: #fff; }
+
+  .theme-btn {
+    margin-top: auto;
+    margin: 12px;
+    padding: 10px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .theme-btn:hover { background: var(--hover); }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .search-bar {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-bar input {
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: var(--accent); }
+
+  .server-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    align-content: start;
+  }
+
+  .server-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .server-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .server-card img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    display: block;
+    background: var(--border);
+  }
+  .server-card .info { padding: 12px 14px; }
+  .server-card .info h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .server-card .info .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+  }
+  .server-card .info .online { color: #2a9a2a; }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+  }
+
+  .detail-view {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .detail-view.show { display: block; }
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .back-btn:hover { background: var(--accent); color: #fff; }
+
+  .detail-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .detail-header img {
+    width: 307px;
+    height: 173px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .detail-header .info h1 { font-size: 24px; margin-bottom: 10px; }
+  .detail-header .info .meta {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+  .detail-header .info .meta span { color: var(--text); }
+
+  .detail-desc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    line-height: 1.7;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .copy-btn {
+    margin-top: 20px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    padding: 12px 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .copy-btn:hover { background: var(--hover); }
+  .copy-btn.copied { background: #2a7a2a; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>Exbox</h2>
+  <div class="nav-item active">服务器</div>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色模式</button>
+</div>
+
+<div class="main">
+  <div id="listView">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="搜索服务器名称...">
+    </div>
+    <div class="server-list" id="serverList">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+
+  <div class="detail-view" id="detailView">
+    <button class="back-btn" onclick="showList()">← 返回列表</button>
+    <div class="detail-header">
+      <img id="detailImg" src="">
+      <div class="info">
+        <h1 id="detailName"></h1>
+        <div class="meta">
+          版本: <span id="detailVersion"></span><br>
+          在线人数: <span id="detailOnline"></span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-desc" id="detailDesc"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制编码</button>
+  </div>
+</div>
+
+<script>
+// 直接读本地静态 JSON 文件
+const DATA_FILE = 'servers.json';
+
+let allServers = [];
+let currentDetail = null;
+
+// 主题切换
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') !== 'light';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
+  localStorage.setItem('exbox-theme', isDark ? 'light' : 'dark');
+}
+// 恢复主题
+(function() {
+  const saved = localStorage.getItem('exbox-theme') || 'dark';
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeBtn').textContent = '☀️ 浅色模式';
+  }
+})();
+
+async function loadServers() {
+  const list = document.getElementById('serverList');
+  list.innerHTML = '<div class="loading">加载中...</div>';
+  try {
+    const res = await fetch(DATA_FILE);
+    const data = await res.json();
+    allServers = data.data || [];
+    renderList('');
+  } catch (e) {
+    list.innerHTML = '<div class="loading">加载失败: ' + e.message + '</div>';
+  }
+}
+
+function renderList(filter) {
+  const list = document.getElementById('serverList');
+  const filtered = filter
+    ? allServers.filter(s => (s.name || '').toLowerCase().includes(filter.toLowerCase()))
+    : allServers;
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="loading">暂无服务器</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(s => `
+    <div class="server-card" onclick="showDetail('${s.entityId}')">
+      <img src="${s.titleImageUrl || ''}" loading="lazy" onerror="this.style.display='none'">
+      <div class="info">
+        <h3>${s.name || '未命名'}</h3>
+        <div class="meta">
+          <span class="online">在线 ${s.onlineCount || '?'}</span>
+          <span>${s.version || ''}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDetail(id) {
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('detailView').classList.add('show');
+  const d = allServers.find(s => String(s.entityId) === String(id));
+  if (!d) {
+    document.getElementById('detailDesc').textContent = '未找到服务器';
+    return;
+  }
+  currentDetail = d;
+  document.getElementById('detailImg').src = d.titleImageUrl || '';
+  document.getElementById('detailName').textContent = d.name || '未命名';
+  document.getElementById('detailVersion').textContent = d.version || '?';
+  document.getElementById('detailOnline').textContent = d.onlineCount || '?';
+  let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+  document.getElementById('detailDesc').textContent = desc || '暂无简介';
+}
+
+function showList() {
+  document.getElementById('detailView').classList.remove('show');
+  document.getElementById('listView').style.display = '';
+}
+
+function copyCode() {
+  if (!currentDetail) return;
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '已复制';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '复制编码'; btn.classList.remove('copied'); }, 2000);
+}
+
+document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
+loadServers();
+</script>
+</body>
+</html>
