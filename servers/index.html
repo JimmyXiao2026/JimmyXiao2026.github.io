@@ -248,8 +248,8 @@
 </div>
 
 <script>
-// API 地址：部署到你的网站后留空（相对路径）；本地测试时填你的网站域名
-const API_BASE = '';
+// 直接读本地静态 JSON 文件
+const DATA_FILE = 'servers.json';
 
 let allServers = [];
 let currentDetail = null;
@@ -275,21 +275,12 @@ async function loadServers() {
   const list = document.getElementById('serverList');
   list.innerHTML = '<div class="loading">加载中...</div>';
   try {
-    let offset = 0;
-    const batch = 20;
-    let collected = [];
-    while (true) {
-      const res = await fetch(`${API_BASE}/api/gameserver/get?offset=${offset}&pageSize=${batch}`);
-      const data = await res.json();
-      if (data.code !== 1 || !data.data || data.data.length === 0) break;
-      collected = collected.concat(data.data);
-      offset += batch;
-      if (data.data.length < batch) break;
-    }
-    allServers = collected;
+    const res = await fetch(DATA_FILE);
+    const data = await res.json();
+    allServers = data.data || [];
     renderList('');
   } catch (e) {
-    list.innerHTML = '<div class="loading">加载失败: ' + e.message + '<br>请确保已部署到网站并配置 API</div>';
+    list.innerHTML = '<div class="loading">加载失败: ' + e.message + '</div>';
   }
 }
 
@@ -303,37 +294,34 @@ function renderList(filter) {
     return;
   }
   list.innerHTML = filtered.map(s => `
-    <div class="server-card" onclick="showDetail('${s.entity_id}')">
-      <img src="${s.title_image_url || ''}" loading="lazy" onerror="this.style.display='none'">
+    <div class="server-card" onclick="showDetail('${s.entityId}')">
+      <img src="${s.titleImageUrl || ''}" loading="lazy" onerror="this.style.display='none'">
       <div class="info">
         <h3>${s.name || '未命名'}</h3>
         <div class="meta">
-          <span class="online">在线 ${s.online_count ?? '?'}</span>
-          <span>${s.mc_version || s.version || ''}</span>
+          <span class="online">在线 ${s.onlineCount || '?'}</span>
+          <span>${s.version || ''}</span>
         </div>
       </div>
     </div>
   `).join('');
 }
 
-async function showDetail(id) {
+function showDetail(id) {
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.add('show');
-  try {
-    const res = await fetch(`${API_BASE}/api/gameserver/id?id=${id}`);
-    const data = await res.json();
-    if (data.code !== 1) throw new Error(data.msg || '获取详情失败');
-    const d = data.data;
-    currentDetail = d;
-    document.getElementById('detailImg').src = d.title_image_url || '';
-    document.getElementById('detailName').textContent = d.name || '未命名';
-    document.getElementById('detailVersion').textContent = d.mc_version || d.version || '?';
-    document.getElementById('detailOnline').textContent = d.online_count ?? '?';
-    let desc = (d.detail_description || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
-    document.getElementById('detailDesc').textContent = desc || '暂无简介';
-  } catch (e) {
-    document.getElementById('detailDesc').textContent = '加载失败: ' + e.message;
+  const d = allServers.find(s => String(s.entityId) === String(id));
+  if (!d) {
+    document.getElementById('detailDesc').textContent = '未找到服务器';
+    return;
   }
+  currentDetail = d;
+  document.getElementById('detailImg').src = d.titleImageUrl || '';
+  document.getElementById('detailName').textContent = d.name || '未命名';
+  document.getElementById('detailVersion').textContent = d.version || '?';
+  document.getElementById('detailOnline').textContent = d.onlineCount || '?';
+  let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+  document.getElementById('detailDesc').textContent = desc || '暂无简介';
 }
 
 function showList() {
