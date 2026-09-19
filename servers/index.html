@@ -129,12 +129,20 @@
     transform: translateY(-3px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
-  .server-card img {
+  .server-card img, .server-card .no-img {
     width: 100%;
     height: 170px;
     object-fit: cover;
     display: block;
     background: var(--border);
+  }
+  .server-card .no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    color: var(--text-dim);
+    font-weight: bold;
   }
   .server-card .info { padding: 12px 14px; }
   .server-card .info h3 {
@@ -305,7 +313,9 @@ function renderList(filter) {
   }
   list.innerHTML = filtered.map(s => `
     <div class="server-card" onclick="showDetail('${s.entityId}')">
-      <img src="${s.titleImageUrl || ''}" onerror="this.style.display='none'">
+      ${s.titleImageUrl
+        ? `<img src="${s.titleImageUrl}" onerror="this.parentElement.classList.add('no-img')">`
+        : `<div class="no-img">${(s.name || '?').charAt(0)}</div>`}
       <div class="info">
         <h3>${s.name || '未命名'}</h3>
         <div class="meta">
@@ -325,7 +335,13 @@ function showDetail(id) {
     return;
   }
   currentDetail = d;
-  document.getElementById('detailImg').src = d.titleImageUrl || '';
+  const detailImg = document.getElementById('detailImg');
+  if (d.titleImageUrl) {
+    detailImg.src = d.titleImageUrl;
+    detailImg.style.display = '';
+  } else {
+    detailImg.style.display = 'none';
+  }
   document.getElementById('detailName').textContent = d.name || '未命名';
   document.getElementById('detailVersion').textContent = d.version || '?';
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
