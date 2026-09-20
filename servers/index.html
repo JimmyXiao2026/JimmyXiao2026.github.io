@@ -480,8 +480,8 @@ function renderDetail(id) {
 let clientOnline = false;
 function checkClient() {
   const pushBtn = document.getElementById('pushBtn');
-  fetch('http://127.0.0.1:25566/ping')
-    .then(r => r.json())
+  fetch('http://localhost:25566/ping')
+    .then(r => r.text())
     .then(() => {
       clientOnline = true;
       pushBtn.classList.remove('disabled');
@@ -498,7 +498,7 @@ function checkClient() {
 function pushToClient() {
   if (!clientOnline || !currentDetail) return;
   const pushBtn = document.getElementById('pushBtn');
-  fetch('http://127.0.0.1:25566/push', {
+  fetch('http://localhost:25566/push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ index: currentDetail.index })
