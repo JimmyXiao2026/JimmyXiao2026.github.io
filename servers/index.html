@@ -372,10 +372,21 @@ function renderDetail(id) {
   // 设置复制按钮状态
   const copyBtn = document.getElementById('copyBtn');
   const version = d.version || '';
-  const isBlocked = version === '100.0.0' || version.startsWith('1.7.');
+  let btnText = '复制编码';
+  let isBlocked = false;
+  if (version === '100.0.0') {
+    btnText = '无法启动基岩版服务器代理';
+    isBlocked = true;
+  } else if (version.startsWith('1.7.')) {
+    btnText = '无法启动';
+    isBlocked = true;
+  } else if (d.blocked) {
+    btnText = '无法启动该服务器';
+    isBlocked = true;
+  }
   if (isBlocked) {
     copyBtn.disabled = true;
-    copyBtn.textContent = version === '100.0.0' ? '无法启动基岩版服务器代理' : '无法启动';
+    copyBtn.textContent = btnText;
     copyBtn.style.opacity = '0.5';
     copyBtn.style.cursor = 'not-allowed';
   } else {
