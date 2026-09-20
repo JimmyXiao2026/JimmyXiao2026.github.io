@@ -346,6 +346,21 @@ function showDetail(id) {
   document.getElementById('detailVersion').textContent = d.version || '?';
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   document.getElementById('detailDesc').textContent = desc || '暂无简介';
+  // 设置复制按钮状态
+  const copyBtn = document.getElementById('copyBtn');
+  const version = d.version || '';
+  const isBlocked = version === '100.0.0' || version.startsWith('1.7.');
+  if (isBlocked) {
+    copyBtn.disabled = true;
+    copyBtn.textContent = '无法启动';
+    copyBtn.style.opacity = '0.5';
+    copyBtn.style.cursor = 'not-allowed';
+  } else {
+    copyBtn.disabled = false;
+    copyBtn.textContent = '复制编码';
+    copyBtn.style.opacity = '1';
+    copyBtn.style.cursor = 'pointer';
+  }
 }
 
 function showList() {
@@ -356,9 +371,17 @@ function showList() {
 function copyCode() {
   if (!currentDetail) return;
   const btn = document.getElementById('copyBtn');
-  btn.textContent = '已复制';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = '复制编码'; btn.classList.remove('copied'); }, 2000);
+  if (btn.disabled) return;
+  // 复制 @编号
+  const code = '@' + (currentDetail.index || '');
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '已复制 ' + code;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '复制编码';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
 }
 
 document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
