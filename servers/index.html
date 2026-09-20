@@ -596,6 +596,7 @@ function copyCode() {
 }
 
 document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
+handleRoute();
 loadServers().then(() => handleRoute());
 </script>
 </body>
