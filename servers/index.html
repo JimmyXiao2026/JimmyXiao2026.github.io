@@ -280,16 +280,21 @@ function toggleTheme() {
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   const btn = document.getElementById('themeBtn');
   btn.textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
-  try {
-    localStorage.setItem('exbox-theme', isDark ? 'light' : 'dark');
-  } catch (e) {}
+  // 存 cookie，有效期 365 天
+  document.cookie = 'exbox-theme=' + (isDark ? 'light' : 'dark') + ';max-age=31536000;path=/';
 }
-// 恢复主题
+// 读 cookie
+function getCookie(name) {
+  const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
+  return m ? m[1] : null;
+}
+// 恢复主题：先读 cookie，没有的话检测系统主题
 (function() {
-  let saved = 'dark';
-  try {
-    saved = localStorage.getItem('exbox-theme') || 'dark';
-  } catch (e) {}
+  let saved = getCookie('exbox-theme');
+  if (!saved) {
+    // 检测系统深色/浅色
+    saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
   if (saved === 'light') {
     document.documentElement.setAttribute('data-theme', 'light');
     document.getElementById('themeBtn').textContent = '☀️ 浅色模式';
