@@ -283,10 +283,21 @@
   <div class="home-view" id="homeView">
     <h1>Exbox</h1>
     <p>网易国服 Minecraft 脱盒工具</p>
-    <div class="warning">
+    <div style="margin-top:32px; max-width:600px; text-align:left;">
+      <p style="font-size:15px; line-height:1.9; color:var(--text);">
+        Exbox 是一个 Fabric 模组，让你在原版客户端中直接连接网易国服服务器。<br>
+        通过本地代理（127.0.0.1:25565）转发流量，实现跨版本连接和脱盒游玩。<br><br>
+        功能：<br>
+        · 4399 账号登录，自动读取游戏角色<br>
+        · 在线服务器列表，支持搜索和版本筛选<br>
+        · 自动适配 ViaFabricPlus 版本协议<br>
+        · 本地代理转发，支持多版本服务器<br><br>
+        本页面提供服务器列表和编码查询，方便快速查找目标服务器。
+      </p>
+    </div>
+    <div class="warning" style="margin-top:40px; font-size:12px; color:var(--text-dim); background:none; border:none;">
       本项目不开源，禁止二次分发。
     </div>
-    <button class="home-btn" onclick="location.hash='#/servers/'">进入服务器列表</button>
   </div>
 
   <div id="listView">
