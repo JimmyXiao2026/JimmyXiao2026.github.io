@@ -62,7 +62,9 @@
 
   .theme-btn {
     margin-top: auto;
-    margin: 12px;
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-bottom: 12px;
     padding: 10px;
     background: var(--accent);
     border: none;
@@ -333,7 +335,7 @@ function renderList(filter) {
       <div class="info">
         <h3>${s.name || '未命名'}</h3>
         <div class="meta">
-          <span>${s.version || ''}</span>
+          <span>${s.version === '100.0.0' ? '基岩版' : (s.version || '')}</span>
         </div>
       </div>
     </div>
@@ -362,7 +364,7 @@ function renderDetail(id) {
     detailImg.style.display = 'none';
   }
   document.getElementById('detailName').textContent = d.name || '未命名';
-  document.getElementById('detailVersion').textContent = d.version || '?';
+  document.getElementById('detailVersion').textContent = d.version === '100.0.0' ? '基岩版' : (d.version || '?');
   document.getElementById('detailAddr').textContent =
     d.serverAddress ? (d.serverAddress + (d.serverPort ? ':' + d.serverPort : '')) : '暂无';
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
