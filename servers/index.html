@@ -236,7 +236,7 @@
 <div class="sidebar">
   <h2>Exbox</h2>
   <div class="nav-item active">服务器</div>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 深色模式</button>
+  <button class="theme-btn" id="themeBtn">🌙 深色模式</button>
 </div>
 
 <div class="main">
@@ -278,17 +278,25 @@ function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') !== 'light';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  document.getElementById('themeBtn').textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
-  localStorage.setItem('exbox-theme', isDark ? 'light' : 'dark');
+  const btn = document.getElementById('themeBtn');
+  btn.textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
+  try {
+    localStorage.setItem('exbox-theme', isDark ? 'light' : 'dark');
+  } catch (e) {}
 }
 // 恢复主题
 (function() {
-  const saved = localStorage.getItem('exbox-theme') || 'dark';
+  let saved = 'dark';
+  try {
+    saved = localStorage.getItem('exbox-theme') || 'dark';
+  } catch (e) {}
   if (saved === 'light') {
     document.documentElement.setAttribute('data-theme', 'light');
     document.getElementById('themeBtn').textContent = '☀️ 浅色模式';
   }
 })();
+// 用 addEventListener 绑定，兼容安卓 WebView
+document.getElementById('themeBtn').addEventListener('click', toggleTheme);
 
 async function loadServers() {
   const list = document.getElementById('serverList');
