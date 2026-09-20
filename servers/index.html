@@ -269,6 +269,18 @@
   }
   .copy-btn:hover { background: var(--hover); }
   .copy-btn.copied { background: #2a7a2a; }
+  .push-btn {
+    margin-top: 10px;
+    background: #2a7a2a;
+    border: none;
+    color: #fff;
+    padding: 12px 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .push-btn:hover { background: #3a8a3a; }
+  .push-btn.disabled { background: #555; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -323,6 +335,7 @@
     </div>
     <div class="detail-desc" id="detailDesc"></div>
     <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制编码</button>
+    <button class="push-btn disabled" id="pushBtn" onclick="pushToClient()">推送到客户端</button>
   </div>
 </div>
 
@@ -453,6 +466,56 @@ function renderDetail(id) {
     copyBtn.style.opacity = '1';
     copyBtn.style.cursor = 'pointer';
   }
+  // 更新推送按钮状态
+  const pushBtn = document.getElementById('pushBtn');
+  if (isBlocked) {
+    pushBtn.classList.add('disabled');
+    pushBtn.textContent = '客户端未运行';
+  } else {
+    checkClient();
+  }
+}
+
+// 检测客户端是否运行
+let clientOnline = false;
+function checkClient() {
+  const pushBtn = document.getElementById('pushBtn');
+  fetch('http://127.0.0.1:25566/ping')
+    .then(r => r.json())
+    .then(() => {
+      clientOnline = true;
+      pushBtn.classList.remove('disabled');
+      pushBtn.textContent = '推送到客户端';
+    })
+    .catch(() => {
+      clientOnline = false;
+      pushBtn.classList.add('disabled');
+      pushBtn.textContent = '客户端未运行';
+    });
+}
+
+// 推送到客户端
+function pushToClient() {
+  if (!clientOnline || !currentDetail) return;
+  const pushBtn = document.getElementById('pushBtn');
+  fetch('http://127.0.0.1:25566/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index: currentDetail.index })
+  })
+    .then(r => r.json())
+    .then(() => {
+      pushBtn.textContent = '已推送';
+      setTimeout(() => {
+        pushBtn.textContent = '推送到客户端';
+      }, 2000);
+    })
+    .catch(() => {
+      pushBtn.textContent = '推送失败';
+      setTimeout(() => {
+        pushBtn.textContent = '推送到客户端';
+      }, 2000);
+    });
 }
 
 function renderHome() {
