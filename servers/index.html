@@ -408,13 +408,22 @@ function renderList(filter) {
   const list = document.getElementById('serverList');
   let filtered = allServers;
   if (filter) {
-    const q = filter.toLowerCase();
+    const q = filter.trim();
     filtered = allServers.filter(s => {
       if (q.startsWith('@')) {
+        // @N → 按序号搜索
         return String(s.index) === q.substring(1);
       }
-      return (s.name || '').toLowerCase().includes(q)
-        || (s.version || '').includes(filter);
+      if (/^\d+$/.test(q)) {
+        // 纯数字 → 按 entityId 搜索
+        return String(s.entityId) === q;
+      }
+      if (q.includes('.')) {
+        // 含点 → 按版本搜索
+        return (s.version || '').includes(q);
+      }
+      // 其他 → 按名称搜索
+      return (s.name || '').toLowerCase().includes(q.toLowerCase());
     });
   }
   if (filtered.length === 0) {
