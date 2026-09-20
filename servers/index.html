@@ -533,7 +533,7 @@ function pushToClient() {
   fetch('http://localhost:25566/push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ index: currentDetail.index })
+    body: JSON.stringify({ entityId: String(currentDetail.entityId) })
   })
     .then(r => r.json())
     .then(() => {
