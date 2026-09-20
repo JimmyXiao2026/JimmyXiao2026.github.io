@@ -578,7 +578,7 @@ function copyCode() {
   if (btn.disabled) return;
   const code = '@' + (currentDetail.index || '');
   navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = '已复制 ' + code;
+    btn.textContent = '已复制';
     btn.classList.add('copied');
     setTimeout(() => {
       btn.textContent = '复制编码';
