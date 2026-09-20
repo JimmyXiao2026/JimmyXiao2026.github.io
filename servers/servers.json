@@ -43,7 +43,8 @@
                      "detailDescription":  "\u003cp\u003e\u003cimg src=\"https://x19.fp.ps.netease.com/file/68f8791ced5cd60ddf08587e3uA1aYAX06\"\u003e\u003c/p\u003e\u003cp\u003e\u003cbr\u003e\u003c/p\u003e\u003cp\u003e\u003cbr\u003e\u003c/p\u003e\u003cp\u003e粘土 黏土 粘土云 黏土云 clay caly clya 恐怖空间 噩梦空间 粘土人 黏土人 糖豆人 方块人 挑战赛 方块帝国 帝国生存 混沌森林 mod生存\u0026nbsp;陨落\u003c/p\u003e\u003cp\u003eClay粘土黏土小游戏空岛生存幸运方块枪战fpscfcscod\u003c/p\u003e",
                      "serverAddress":  "",
                      "serverPort":  0,
-                     "index":  4
+                     "index":  4,
+                     "blocked":  true
                  },
                  {
                      "entityId":  "4619737516439909914",
