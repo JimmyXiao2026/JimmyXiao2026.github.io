@@ -327,6 +327,11 @@ function renderList(filter) {
 }
 
 function showDetail(id) {
+  // 用 hash 路由，这样浏览器返回按钮也能回到列表
+  location.hash = '#/server/' + id;
+}
+
+function renderDetail(id) {
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.add('show');
   const d = allServers.find(s => String(s.entityId) === String(id));
@@ -364,9 +369,25 @@ function showDetail(id) {
 }
 
 function showList() {
+  location.hash = '#/';
+}
+
+function showListView() {
   document.getElementById('detailView').classList.remove('show');
   document.getElementById('listView').style.display = '';
 }
+
+// hash 路由处理
+function handleRoute() {
+  const hash = location.hash;
+  const m = hash.match(/^#\/server\/(.+)$/);
+  if (m) {
+    renderDetail(m[1]);
+  } else {
+    showListView();
+  }
+}
+window.addEventListener('hashchange', handleRoute);
 
 function copyCode() {
   if (!currentDetail) return;
@@ -385,7 +406,7 @@ function copyCode() {
 }
 
 document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
-loadServers();
+loadServers().then(() => handleRoute());
 </script>
 </body>
 </html>
