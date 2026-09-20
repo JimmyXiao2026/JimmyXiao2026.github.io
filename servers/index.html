@@ -50,6 +50,7 @@
     padding: 0 20px 16px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 12px;
+    cursor: pointer;
   }
   .sidebar .nav-item {
     padding: 10px 20px;
@@ -82,6 +83,41 @@
     overflow: hidden;
   }
 
+  /* 首页 */
+  .home-view {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+  }
+  .home-view.show { display: flex; }
+  .home-view h1 { font-size: 48px; margin-bottom: 20px; }
+  .home-view p { font-size: 16px; color: var(--text-dim); line-height: 1.8; max-width: 500px; }
+  .home-view .warning {
+    margin-top: 24px;
+    padding: 16px 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #ff6b6b;
+    font-size: 14px;
+  }
+  .home-btn {
+    margin-top: 32px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    padding: 14px 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .home-btn:hover { background: var(--hover); }
+
+  /* 列表页 */
   .search-bar {
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
@@ -104,6 +140,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    display: none;
   }
 
   .server-list {
@@ -168,6 +205,7 @@
     color: var(--text-dim);
   }
 
+  /* 详情页 */
   .detail-view {
     display: none;
     flex: 1;
@@ -236,15 +274,24 @@
 <body>
 
 <div class="sidebar">
-  <h2>Exbox</h2>
-  <div class="nav-item active">服务器</div>
+  <h2 id="homeLink" onclick="location.hash='#/'">Exbox</h2>
+  <div class="nav-item" id="navServers" onclick="location.hash='#/servers/'">服务器</div>
   <button class="theme-btn" id="themeBtn">🌙 深色模式</button>
 </div>
 
 <div class="main">
+  <div class="home-view" id="homeView">
+    <h1>Exbox</h1>
+    <p>网易国服 Minecraft 脱盒工具</p>
+    <div class="warning">
+      本项目不开源，禁止二次分发。
+    </div>
+    <button class="home-btn" onclick="location.hash='#/servers/'">进入服务器列表</button>
+  </div>
+
   <div id="listView">
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="搜索服务器名称...">
+      <input type="text" id="searchInput" placeholder="搜索服务器名称/版本/@编号...">
     </div>
     <div class="server-list" id="serverList">
       <div class="loading">加载中...</div>
@@ -252,7 +299,7 @@
   </div>
 
   <div class="detail-view" id="detailView">
-    <button class="back-btn" onclick="showList()">← 返回列表</button>
+    <button class="back-btn" onclick="location.hash='#/servers/'">← 返回列表</button>
     <div class="detail-header">
       <img id="detailImg" src="">
       <div class="info">
@@ -269,9 +316,7 @@
 </div>
 
 <script>
-// 直接读本地静态 JSON 文件
 const DATA_FILE = 'servers.json';
-
 let allServers = [];
 let currentDetail = null;
 
@@ -280,21 +325,16 @@ function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') !== 'light';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  const btn = document.getElementById('themeBtn');
-  btn.textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
-  // 存 cookie，有效期 365 天
+  document.getElementById('themeBtn').textContent = isDark ? '☀️ 浅色模式' : '🌙 深色模式';
   document.cookie = 'exbox-theme=' + (isDark ? 'light' : 'dark') + ';max-age=31536000;path=/';
 }
-// 读 cookie
 function getCookie(name) {
   const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
   return m ? m[1] : null;
 }
-// 恢复主题：先读 cookie，没有的话检测系统主题
 (function() {
   let saved = getCookie('exbox-theme');
   if (!saved) {
-    // 检测系统深色/浅色
     saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   }
   if (saved === 'light') {
@@ -302,7 +342,6 @@ function getCookie(name) {
     document.getElementById('themeBtn').textContent = '☀️ 浅色模式';
   }
 })();
-// 用 addEventListener 绑定，兼容安卓 WebView
 document.getElementById('themeBtn').addEventListener('click', toggleTheme);
 
 async function loadServers() {
@@ -320,9 +359,17 @@ async function loadServers() {
 
 function renderList(filter) {
   const list = document.getElementById('serverList');
-  const filtered = filter
-    ? allServers.filter(s => (s.name || '').toLowerCase().includes(filter.toLowerCase()))
-    : allServers;
+  let filtered = allServers;
+  if (filter) {
+    const q = filter.toLowerCase();
+    filtered = allServers.filter(s => {
+      if (q.startsWith('@')) {
+        return String(s.index) === q.substring(1);
+      }
+      return (s.name || '').toLowerCase().includes(q)
+        || (s.version || '').includes(filter);
+    });
+  }
   if (filtered.length === 0) {
     list.innerHTML = '<div class="loading">暂无服务器</div>';
     return;
@@ -343,13 +390,14 @@ function renderList(filter) {
 }
 
 function showDetail(id) {
-  // 用 hash 路由，这样浏览器返回按钮也能回到列表
   location.hash = '#/server/' + id;
 }
 
 function renderDetail(id) {
+  document.getElementById('homeView').classList.remove('show');
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.add('show');
+  document.getElementById('navServers').classList.add('active');
   const d = allServers.find(s => String(s.entityId) === String(id));
   if (!d) {
     document.getElementById('detailDesc').textContent = '未找到服务器';
@@ -369,7 +417,6 @@ function renderDetail(id) {
     d.serverAddress ? (d.serverAddress + (d.serverPort ? ':' + d.serverPort : '')) : '暂无';
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   document.getElementById('detailDesc').textContent = desc || '暂无简介';
-  // 设置复制按钮状态
   const copyBtn = document.getElementById('copyBtn');
   const version = d.version || '';
   let btnText = '复制编码';
@@ -397,24 +444,33 @@ function renderDetail(id) {
   }
 }
 
-function showList() {
-  location.hash = '#/';
-}
-
-function showListView() {
+function renderHome() {
+  document.getElementById('homeView').classList.add('show');
+  document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.remove('show');
-  document.getElementById('listView').style.display = '';
+  document.getElementById('navServers').classList.remove('active');
 }
 
-// hash 路由处理
+function renderServersList() {
+  document.getElementById('homeView').classList.remove('show');
+  document.getElementById('listView').style.display = 'flex';
+  document.getElementById('detailView').classList.remove('show');
+  document.getElementById('navServers').classList.add('active');
+}
+
 function handleRoute() {
   const hash = location.hash;
+  if (!hash || hash === '#/' || hash === '#') {
+    renderHome();
+    return;
+  }
   const m = hash.match(/^#\/server\/(.+)$/);
   if (m) {
     renderDetail(m[1]);
-  } else {
-    showListView();
+    return;
   }
+  // #/servers/ 或其他
+  renderServersList();
 }
 window.addEventListener('hashchange', handleRoute);
 
@@ -422,7 +478,6 @@ function copyCode() {
   if (!currentDetail) return;
   const btn = document.getElementById('copyBtn');
   if (btn.disabled) return;
-  // 复制 @编号
   const code = '@' + (currentDetail.index || '');
   navigator.clipboard.writeText(code).then(() => {
     btn.textContent = '已复制 ' + code;
