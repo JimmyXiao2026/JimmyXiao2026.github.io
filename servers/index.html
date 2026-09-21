@@ -346,10 +346,11 @@
     <div class="detail-header">
       <img id="detailImg" src="">
       <div class="info">
-        <h1 id="detailName"></h1>
+        <h1 id="detailName" style="cursor:pointer" title="点击复制" onclick="copyText('detailName')"></h1>
         <div class="meta">
           版本: <span id="detailVersion"></span><br>
-          服务器IP: <span id="detailAddr"></span>
+          服务器IP: <span id="detailAddr" style="cursor:pointer" title="点击复制" onclick="copyText('detailAddr')"></span><br>
+          服务器编号: <span id="detailEntityId" style="cursor:pointer" title="点击复制" onclick="copyText('detailEntityId')"></span>
         </div>
       </div>
     </div>
@@ -471,6 +472,7 @@ function renderDetail(id) {
   document.getElementById('detailVersion').textContent = d.version === '100.0.0' ? '基岩版' : (d.version || '?');
   document.getElementById('detailAddr').textContent =
     d.serverAddress ? (d.serverAddress + (d.serverPort ? ':' + d.serverPort : '')) : '暂无';
+  document.getElementById('detailEntityId').textContent = d.entityId || '暂无';
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   document.getElementById('detailDesc').textContent = desc || '暂无简介';
   const copyBtn = document.getElementById('copyBtn');
@@ -583,6 +585,27 @@ function handleRoute() {
   renderServersList();
 }
 window.addEventListener('hashchange', handleRoute);
+
+function copyText(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  if (!text || text === '暂无') return;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已复制到剪贴板');
+  });
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:20px;background:rgba(0,0,0,0.8);color:#fff;padding:8px 16px;border-radius:4px;z-index:9999;font-size:14px;opacity:0;transition:opacity 0.3s;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+}
 
 function copyCode() {
   if (!currentDetail) return;
