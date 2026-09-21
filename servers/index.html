@@ -825,12 +825,12 @@ function showToast(msg) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'toast';
-    toast.style.cssText = 'position:fixed;bottom:20px;left:20px;background:rgba(0,0,0,0.8);color:#fff;padding:8px 16px;border-radius:4px;z-index:9999;font-size:14px;opacity:0;transition:opacity 0.3s;';
+    toast.style.cssText = 'position:fixed;top:50%;right:20px;transform:translateX(calc(100% + 20px));background:rgba(255,255,255,0.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.15);color:var(--text);padding:12px 20px;border-radius:12px;z-index:9999;font-size:14px;transition:transform 0.3s ease;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
-  toast.style.opacity = '1';
-  setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+  toast.style.transform = 'translateX(0)';
+  setTimeout(() => { toast.style.transform = 'translateX(calc(100% + 20px))'; }, 2000);
 }
 
 function copyCode() {
