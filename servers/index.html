@@ -349,10 +349,6 @@
   /* 汉堡菜单按钮 */
   .hamburger {
     display: none;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    z-index: 1001;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -364,6 +360,7 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     transition: transform 0.25s ease, background 0.25s ease;
+    flex-shrink: 0;
   }
   .hamburger:hover {
     transform: scale(1.05);
@@ -385,6 +382,7 @@
   /* 响应式：窄屏时侧边栏隐藏 */
   @media (max-width: 768px) {
     .hamburger { display: block; }
+    .sidebar.open ~ .hamburger { display: none; }
     .sidebar {
       position: fixed;
       top: 0;
@@ -414,7 +412,6 @@
 </head>
 <body>
 
-<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar" id="sidebar">
@@ -447,8 +444,9 @@
   </div>
 
   <div id="listView">
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="搜索服务器名称/版本/@编号...">
+    <div class="search-bar" style="display:flex; gap:12px; align-items:center;">
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+      <input type="text" id="searchInput" placeholder="搜索服务器名称/版本/@编号..." style="flex:1;">
     </div>
     <div class="server-list" id="serverList">
       <div class="loading">加载中...</div>
