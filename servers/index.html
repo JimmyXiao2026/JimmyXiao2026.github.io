@@ -390,7 +390,7 @@
   /* 响应式：窄屏时侧边栏隐藏 */
   @media (max-width: 768px) {
     .hamburger { display: block; }
-    .sidebar.open ~ .hamburger { display: none; }
+    .sidebar.open ~ .hamburger { content: '×'; }
     .sidebar {
       position: fixed;
       top: 0;
@@ -513,11 +513,14 @@ window.addEventListener('load', updateBackButton);
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
   sidebar.classList.toggle('open');
   if (sidebar.classList.contains('open')) {
     overlay.style.display = 'block';
+    hamburger.textContent = '×';
   } else {
     overlay.style.display = 'none';
+    hamburger.textContent = '☰';
   }
 }
 
