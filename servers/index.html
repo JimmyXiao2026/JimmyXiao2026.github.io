@@ -410,22 +410,14 @@
     .detail-actions {
       gap: 12px;
     }
-    .detail-actions button {
+    .back-btn {
       border-radius: 50% !important;
       width: 60px !important;
       height: 60px !important;
       padding: 0 !important;
       justify-content: center;
       flex: 0 0 60px !important;
-    }
-    .back-btn {
       font-size: 24px !important;
-    }
-    .back-btn::before {
-      content: '←';
-    }
-    .back-btn {
-      font-size: 0 !important;
     }
   }
 </style>
@@ -487,7 +479,7 @@
     </div>
     <div class="detail-desc" id="detailDesc"></div>
     <div class="detail-actions">
-      <button class="back-btn" onclick="location.hash='#/servers/'">← 返回列表</button>
+      <button class="back-btn" id="backBtn" onclick="location.hash='#/servers/'">← 返回列表</button>
       <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制编码</button>
       <button class="push-btn disabled" id="pushBtn" onclick="pushToClient()">推送到客户端</button>
     </div>
@@ -495,6 +487,17 @@
 </div>
 
 <script>
+function updateBackButton() {
+  const btn = document.getElementById('backBtn');
+  if (window.innerWidth <= 768) {
+    btn.textContent = '←';
+  } else {
+    btn.textContent = '← 返回列表';
+  }
+}
+window.addEventListener('resize', updateBackButton);
+window.addEventListener('load', updateBackButton);
+
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
