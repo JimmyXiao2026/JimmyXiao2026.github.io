@@ -345,11 +345,79 @@
   }
   .push-btn:active { transform: translateY(0); }
   .push-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 汉堡菜单按钮 */
+  .hamburger {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.25s ease, background 0.25s ease;
+  }
+  .hamburger:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* 遮罩层 */
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  /* 响应式：窄屏时侧边栏隐藏 */
+  @media (max-width: 768px) {
+    .hamburger { display: block; }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100vh;
+      z-index: 1000;
+      transition: left 0.3s ease;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .sidebar.open ~ .overlay {
+      display: block;
+    }
+    .server-card {
+      width: 100% !important;
+    }
+    .detail-header {
+      flex-direction: column;
+    }
+    .detail-header img {
+      width: 100%;
+      height: auto;
+    }
+  }
 </style>
 </head>
 <body>
 
-<div class="sidebar">
+<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
   <h2 id="homeLink" onclick="location.hash='#/'">Exbox</h2>
   <div class="nav-item" id="navServers" onclick="location.hash='#/servers/'">服务器</div>
   <button class="theme-btn" id="themeBtn">🌙 深色模式</button>
@@ -409,6 +477,17 @@
 </div>
 
 <script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  sidebar.classList.toggle('open');
+  if (sidebar.classList.contains('open')) {
+    overlay.style.display = 'block';
+  } else {
+    overlay.style.display = 'none';
+  }
+}
+
 const DATA_FILE = 'servers.json';
 let allServers = [];
 let currentDetail = null;
