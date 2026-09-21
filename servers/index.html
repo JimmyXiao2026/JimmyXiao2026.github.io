@@ -375,6 +375,30 @@
     background: rgba(255, 255, 255, 0.15);
   }
 
+  /* 详情页返回按钮（汉堡按钮右边） */
+  .detail-back-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 68px;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.25s ease, background 0.25s ease;
+  }
+  .detail-back-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
   /* 遮罩层 */
   .overlay {
     display: none;
@@ -419,13 +443,10 @@
       gap: 12px;
     }
     .back-btn {
-      border-radius: 50% !important;
-      width: 60px !important;
-      height: 60px !important;
-      padding: 0 !important;
-      justify-content: center;
-      flex: 0 0 60px !important;
-      font-size: 24px !important;
+      display: none !important;
+    }
+    .detail-back-btn {
+      display: block;
     }
     .copy-btn, .push-btn {
       justify-content: center;
@@ -437,6 +458,7 @@
 <body>
 
 <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+<button class="detail-back-btn" id="detailBackBtn" onclick="location.hash='#/servers/'"><</button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar" id="sidebar" onclick="if(window.innerWidth <= 768) closeSidebar()">
@@ -501,11 +523,24 @@
 <script>
 function updateBackButton() {
   const btn = document.getElementById('backBtn');
+  const detailBack = document.getElementById('detailBackBtn');
   if (window.innerWidth <= 768) {
     btn.textContent = '<';
   } else {
     btn.textContent = '< 返回列表';
   }
+}
+
+function showDetailBackBtn() {
+  const detailBack = document.getElementById('detailBackBtn');
+  if (window.innerWidth <= 768) {
+    detailBack.style.display = 'block';
+  }
+}
+
+function hideDetailBackBtn() {
+  const detailBack = document.getElementById('detailBackBtn');
+  detailBack.style.display = 'none';
 }
 window.addEventListener('resize', updateBackButton);
 window.addEventListener('load', updateBackButton);
@@ -624,6 +659,7 @@ function renderDetail(id) {
   document.getElementById('homeView').classList.remove('show');
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.add('show');
+  showDetailBackBtn();
   document.getElementById('navServers').classList.add('active');
   const d = allServers.find(s => String(s.entityId) === String(id));
   if (!d) {
@@ -730,6 +766,7 @@ function renderHome() {
   document.getElementById('homeView').classList.add('show');
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.remove('show');
+  hideDetailBackBtn();
   document.getElementById('navServers').classList.remove('active');
 }
 
@@ -737,6 +774,7 @@ function renderServersList() {
   document.getElementById('homeView').classList.remove('show');
   document.getElementById('listView').style.display = 'flex';
   document.getElementById('detailView').classList.remove('show');
+  hideDetailBackBtn();
   document.getElementById('navServers').classList.add('active');
 }
 
