@@ -419,6 +419,10 @@
       flex: 0 0 60px !important;
       font-size: 24px !important;
     }
+    .copy-btn, .push-btn {
+      justify-content: center;
+      text-align: center;
+    }
   }
 </style>
 </head>
@@ -490,9 +494,9 @@
 function updateBackButton() {
   const btn = document.getElementById('backBtn');
   if (window.innerWidth <= 768) {
-    btn.textContent = '←';
+    btn.textContent = '<';
   } else {
-    btn.textContent = '← 返回列表';
+    btn.textContent = '< 返回列表';
   }
 }
 window.addEventListener('resize', updateBackButton);
