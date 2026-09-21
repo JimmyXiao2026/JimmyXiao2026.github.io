@@ -415,8 +415,8 @@ function renderList(filter) {
         return String(s.index) === q.substring(1);
       }
       if (/^\d+$/.test(q)) {
-        // 纯数字 → 按 entityId 搜索
-        return String(s.entityId) === q;
+        // 纯数字 → 按 entityId 搜索（支持部分匹配）
+        return String(s.entityId).includes(q);
       }
       if (q.includes('.')) {
         // 含点 → 按版本搜索
