@@ -713,7 +713,7 @@ function renderDetail(id) {
   } else if (entityId === '4619585369740458545' || entityId === '4685156123027815050') {
     btnText = '无法启动';
     isBlocked = true;
-  } else if (d.blocked) {
+  } else if (!d.serverAddress || d.serverAddress === '' || !d.serverPort || d.serverPort === 0) {
     btnText = '无法启动该服务器';
     isBlocked = true;
   }
