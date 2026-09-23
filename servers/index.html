@@ -851,6 +851,16 @@ function copyCode() {
 document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
 handleRoute();
 loadServers().then(() => handleRoute());
+
+// 按 Enter 键推送到客户端
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && location.hash.startsWith('#/server/')) {
+    const pushBtn = document.getElementById('pushBtn');
+    if (pushBtn && !pushBtn.classList.contains('disabled')) {
+      pushToClient();
+    }
+  }
+});
 </script>
 </body>
 </html>
