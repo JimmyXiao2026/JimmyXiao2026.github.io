@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -482,6 +482,7 @@
 <div class="sidebar" id="sidebar" onclick="if(window.innerWidth <= 768) closeSidebar()">
   <h2 id="homeLink" onclick="location.hash='#/'">Exbox</h2>
   <div class="nav-item" id="navServers" onclick="location.hash='#/servers/'">服务器</div>
+  <div class="nav-item" id="navRental" onclick="location.hash='#/rental/'">租赁服</div>
   <button class="theme-btn" id="themeBtn">🌙 深色模式</button>
 </div>
 
@@ -589,6 +590,7 @@ function toggleSidebar() {
 
 const DATA_FILE = 'servers.json';
 let allServers = [];
+let currentListType = 'servers';
 let currentDetail = null;
 
 // 主题切换
@@ -630,7 +632,9 @@ async function loadServers() {
 
 function renderList(filter) {
   const list = document.getElementById('serverList');
-  let filtered = allServers;
+  let filtered = currentListType === 'rental'
+    ? allServers.filter(s => s.isRental === true)
+    : allServers.filter(s => s.isRental !== true);
   if (filter) {
     const q = filter.trim();
     filtered = allServers.filter(s => {
@@ -786,6 +790,7 @@ function renderHome() {
   document.getElementById('detailView').classList.remove('show');
   hideDetailBackBtn();
   document.getElementById('navServers').classList.remove('active');
+  document.getElementById('navRental').classList.remove('active');
 }
 
 function renderServersList() {
@@ -793,7 +798,9 @@ function renderServersList() {
   document.getElementById('listView').style.display = 'flex';
   document.getElementById('detailView').classList.remove('show');
   hideDetailBackBtn();
-  document.getElementById('navServers').classList.add('active');
+  document.getElementById('navServers').classList.toggle('active', currentListType === 'servers');
+  document.getElementById('navRental').classList.toggle('active', currentListType === 'rental');
+  renderList(document.getElementById('searchInput').value);
 }
 
 function handleRoute() {
@@ -807,7 +814,13 @@ function handleRoute() {
     renderDetail(m[1]);
     return;
   }
+  if (hash.startsWith('#/rental/')) {
+    currentListType = 'rental';
+    renderServersList();
+    return;
+  }
   // #/servers/ 或其他
+  currentListType = 'servers';
   renderServersList();
 }
 window.addEventListener('hashchange', handleRoute);
