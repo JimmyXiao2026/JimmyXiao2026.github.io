@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+const apis = [
+  'https://icanhazip.com',
+  'https://ifconfig.me/ip',
+  'https://api.ip.sb/ip',
+  'https://ipinfo.io/ip',
+  'https://ifconfig.co/json',
+  'https://httpbin.org/ip',
+  'https://myip.ipip.net/json'
+];
+let current = 0;
+
+function fetchIp() {
+  if (current >= apis.length) {
+    document.body.textContent = '获取IP失败';
+    return;
+  }
+  const url = apis[current];
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('status not ok');
+      if(url.includes('json')){
+        return res.json().then(data=>{
+          if(data.origin) return data.origin.trim();
+          if(data.ip) return data.ip.trim();
+          if(data.ip_addr) return data.ip_addr.trim();
+          throw new Error('no ip field');
+        })
+      }else{
+        return res.text().then(t=>t.trim());
+      }
+    })
+    .then(ip => {
+      document.body.textContent = ip;
+    })
+    .catch(() => {
+      current++;
+      fetchIp();
+    });
+}
+fetchIp();
+</script>
+</body>
+</html>
