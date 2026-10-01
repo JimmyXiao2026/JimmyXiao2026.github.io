@@ -6,7 +6,7 @@ const apis = [
   'https://icanhazip.com',
   'https://ifconfig.me/ip',
   'https://api.ip.sb/ip',
-  'https://ipinfo.io/ip',
+  'https://ipinfo.io/json',
   'https://ifconfig.co/json',
   'https://httpbin.org/ip',
   'https://myip.ipip.net/json'
@@ -24,17 +24,32 @@ function fetchIp() {
       if (!res.ok) throw new Error('status not ok');
       if(url.includes('json')){
         return res.json().then(data=>{
-          if(data.origin) return data.origin.trim();
-          if(data.ip) return data.ip.trim();
-          if(data.ip_addr) return data.ip_addr.trim();
-          throw new Error('no ip field');
+          let ip, loc;
+          if(data.origin) {
+            ip = data.origin.trim();
+            loc = "";
+          }else if(data.ip) {
+            ip = data.ip.trim();
+            loc = data.city ? `${data.country} | ${data.region} | ${data.city}` : "";
+          }else if(data.ip_addr) {
+            ip = data.ip_addr.trim();
+            loc = data.location || "";
+          }else if(data.ipinfo){
+            ip = data.ip;
+            loc = `${data.country} | ${data.region} | ${data.city}`;
+          }
+          return {ip, loc};
         })
       }else{
-        return res.text().then(t=>t.trim());
+        return res.text().then(t=>({ip:t.trim(), loc:""}));
       }
     })
-    .then(ip => {
-      document.body.textContent = ip;
+    .then(result => {
+      let text = `IP: ${result.ip}`;
+      if(result.loc){
+        text += ` | LOC: ${result.loc}`;
+      }
+      document.body.textContent = text;
     })
     .catch(() => {
       current++;
