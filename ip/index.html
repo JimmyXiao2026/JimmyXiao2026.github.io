@@ -36,25 +36,38 @@ function fetchIp() {
           const ip = (d.origin || d.ip || d.ip_addr || '').trim();
           if (!ip) throw new Error('no ip field');
           let loc = '';
+          let isp = '';
           // ipip.net: data.location 可能是 "广东省深圳市 电信" 字符串，或 ["中国","广东","深圳","","移动"] 数组
           if (d.location) {
-            loc = Array.isArray(d.location)
-              ? d.location.filter(Boolean).join(' ').trim()
-              : d.location.trim();
+            if (Array.isArray(d.location)) {
+              const parts = d.location.map(s => (s || '').trim());
+              // 标准格式 5 项 [国家,省份,城市,区县,运营商]，最后一项是运营商，单独拆出
+              if (parts.length >= 5) {
+                isp = parts[parts.length - 1];
+                loc = parts.slice(0, -1).filter(Boolean).join(' ').trim();
+              } else {
+                loc = parts.filter(Boolean).join(' ').trim();
+              }
+            } else {
+              loc = d.location.trim();
+            }
           }
           // ifconfig.co/json 等: 拆分的 city / region(region_name) / country 字段
           if (!loc && d.city) {
             loc = [d.city, d.region || d.region_name, d.country].filter(Boolean).join(' ').trim();
           }
-          return { ip: ip, loc: loc };
+          return { ip: ip, loc: loc, isp: isp };
         });
       } else {
-        return res.text().then(t => ({ ip: t.trim(), loc: '' }));
+        return res.text().then(t => ({ ip: t.trim(), loc: '', isp: '' }));
       }
     })
     .then(info => {
-      // 有地理位置就换行输出：第一行 IP，第二行位置
-      document.body.textContent = info.loc ? info.ip + '\n' + info.loc : info.ip;
+      // 输出格式：IP 换行 位置（有则换行 运营商）
+      let text = info.ip;
+      if (info.loc) text += '\n' + info.loc;
+      if (info.isp) text += '\n' + info.isp;
+      document.body.textContent = text;
     })
     .catch(() => {
       current++;
