@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Ctext x='32' y='46' font-size='34' text-anchor='middle' fill='white' font-family='monospace'%3EIP%3C/text%3E%3C/svg%3E">
+<style>body{font-family:Consolas,Menlo,monospace;padding:24px;font-size:16px;white-space:pre-line;}</style>
+</head>
 <body>
 <script>
 const apis = [
+  // 带地理位置的接口优先，成功后输出 IP + 换行 + 位置
+  'https://ifconfig.co/json',
+  'https://myip.ipip.net/json',
   'https://icanhazip.com',
   'https://ifconfig.me/ip',
   'https://api.ip.sb/ip',
-  'https://ipinfo.io/json',
-  'https://ifconfig.co/json',
-  'https://httpbin.org/ip',
-  'https://myip.ipip.net/json'
+  'https://ipinfo.io/ip',
+  'https://httpbin.org/ip'
 ];
 let current = 0;
 
@@ -22,34 +29,32 @@ function fetchIp() {
   fetch(url)
     .then(res => {
       if (!res.ok) throw new Error('status not ok');
-      if(url.includes('json')){
-        return res.json().then(data=>{
-          let ip, loc;
-          if(data.origin) {
-            ip = data.origin.trim();
-            loc = "";
-          }else if(data.ip) {
-            ip = data.ip.trim();
-            loc = data.city ? `${data.country} | ${data.region} | ${data.city}` : "";
-          }else if(data.ip_addr) {
-            ip = data.ip_addr.trim();
-            loc = data.location || "";
-          }else if(data.ipinfo){
-            ip = data.ip;
-            loc = `${data.country} | ${data.region} | ${data.city}`;
+      if (url.includes('json')) {
+        return res.json().then(data => {
+          // ipip.net 是 {ret, data:{...}} 嵌套结构，先归一化
+          const d = data.data && typeof data.data === 'object' ? data.data : data;
+          const ip = (d.origin || d.ip || d.ip_addr || '').trim();
+          if (!ip) throw new Error('no ip field');
+          let loc = '';
+          // ipip.net: data.location 可能是 "广东省深圳市 电信" 字符串，或 ["中国","广东","深圳","","移动"] 数组
+          if (d.location) {
+            loc = Array.isArray(d.location)
+              ? d.location.filter(Boolean).join(' ').trim()
+              : d.location.trim();
           }
-          return {ip, loc};
-        })
-      }else{
-        return res.text().then(t=>({ip:t.trim(), loc:""}));
+          // ifconfig.co/json 等: 拆分的 city / region(region_name) / country 字段
+          if (!loc && d.city) {
+            loc = [d.city, d.region || d.region_name, d.country].filter(Boolean).join(' ').trim();
+          }
+          return { ip: ip, loc: loc };
+        });
+      } else {
+        return res.text().then(t => ({ ip: t.trim(), loc: '' }));
       }
     })
-    .then(result => {
-      let text = `IP: ${result.ip}`;
-      if(result.loc){
-        text += ` | LOC: ${result.loc}`;
-      }
-      document.body.textContent = text;
+    .then(info => {
+      // 有地理位置就换行输出：第一行 IP，第二行位置
+      document.body.textContent = info.loc ? info.ip + '\n' + info.loc : info.ip;
     })
     .catch(() => {
       current++;
