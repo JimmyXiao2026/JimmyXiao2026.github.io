@@ -187,6 +187,7 @@
     remote: '<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 11l4 2.5-4 2.5M12.5 13h4"/></svg>',
     key: '<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 8v8M15 8v8M9 12h6"/></svg>',
     music: '<svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/><path d="M12 6v.5"/></svg>',
     default: '<svg viewBox="0 0 24 24" fill="none" stroke="#8b7cf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h6l-2 8 10-12h-6z"/></svg>',
     dl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>'
   };
@@ -194,8 +195,15 @@
   var PLATFORMS = ['all', 'windows', 'linux', 'macos', 'android'];
   var data = null;
 
-  // 内置特殊软件：文件名/版本会随发布变化，不写在 apps.yml 里，逻辑固定在此处
+  // 内置特殊软件：链接/文件名会随官方发布变化，不写在 apps.yml 里，逻辑固定在此处
   var BUILTIN_APPS = [{
+    name: '爱思助手',
+    platform: 'windows',
+    version: '官网 64 位 · 最新版',
+    desc: '苹果设备管理工具，刷机、备份、应用管理一站式。若链接失效可到 i4.cn 官网获取新链接。',
+    url: 'https://url.i4.cn/bUjmeyaa',
+    icon: 'phone'
+  }, {
     name: 'Listen1',
     platform: 'windows',
     version: 'GitHub 最新版…',
