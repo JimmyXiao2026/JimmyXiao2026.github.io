@@ -540,7 +540,7 @@
     .then(function (r) { return r.json(); })
     .then(function (list) {
       if (!Array.isArray(list)) throw new Error('bad response');
-      var repos = list.filter(function (x) { return !x.fork; });
+      var repos = list.filter(function (x) { return !x.fork && x.name !== 'JimmyXiao2026.github.io'; });
       if (!repos.length) throw new Error('no repos');
       var html = repos.map(function (x) {
         var color = LANG_COLOR[x.language] || '#8b7cf8';
