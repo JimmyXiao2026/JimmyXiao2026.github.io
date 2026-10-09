@@ -425,7 +425,7 @@
     <h2 class="font-display">精选项目</h2>
   </div>
 
-  <section class="projects">
+  <section class="projects" id="repo-list">
     <a class="card reveal" href="#" data-toast="Nebula UI 演示页待配置">
       <div class="card-top">
         <span class="card-icon">
@@ -523,6 +523,48 @@
     });
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+  // ===== Load GitHub repos (fallback: static cards stay) =====
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var repoList = document.getElementById('repo-list');
+  var LANG_COLOR = {
+    'HTML': '#e34f26', 'Java': '#b07219', 'Batchfile': '#c1f12e', 'Kotlin': '#a97bff',
+    'JavaScript': '#f1e05a', 'Python': '#3572A5', 'C': '#555555', 'C++': '#f34b7d',
+    'Shell': '#89e051', 'TypeScript': '#3178c6'
+  };
+  fetch('https://api.github.com/users/JimmyXiao2026/repos?sort=updated&per_page=50')
+    .then(function (r) { return r.json(); })
+    .then(function (list) {
+      if (!Array.isArray(list)) throw new Error('bad response');
+      var repos = list.filter(function (x) { return !x.fork; });
+      if (!repos.length) throw new Error('no repos');
+      var html = repos.map(function (x) {
+        var color = LANG_COLOR[x.language] || '#8b7cf8';
+        var desc = x.description || '暂无简介';
+        var date = (x.updated_at || '').slice(0, 10);
+        return '<a class="card reveal" href="' + esc(x.html_url) + '" target="_blank" rel="noopener">'
+          + '<div class="card-top">'
+          +   '<span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg></span>'
+          +   '<svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>'
+          + '</div>'
+          + '<h3>' + esc(x.name) + '</h3>'
+          + '<p>' + esc(desc) + '</p>'
+          + '<div class="tags">'
+          +   (x.language ? '<span class="tag" style="color:' + color + '">' + esc(x.language) + '</span>' : '')
+          +   '<span class="tag">★ ' + (x.stargazers_count || 0) + '</span>'
+          +   '<span class="tag">' + date + '</span>'
+          + '</div>'
+          + '</a>';
+      }).join('');
+      repoList.innerHTML = html;
+      var cards = repoList.querySelectorAll('.card.reveal');
+      for (var i = 0; i < cards.length; i++) io.observe(cards[i]);
+    })
+    .catch(function () { /* 拉取失败：保留静态演示卡片 */ });
 
   // ===== Toast for placeholder buttons =====
   var toast = document.getElementById('toast');
