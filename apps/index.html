@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Windows 应用下载 · JimmyXiao</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" />
+<style>
+  :root {
+    --bg: #05060e;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-strong: rgba(255, 255, 255, 0.09);
+    --stroke: rgba(255, 255, 255, 0.10);
+    --stroke-strong: rgba(255, 255, 255, 0.18);
+    --text: #e8ecf8;
+    --text-dim: #9aa3bd;
+    --text-faint: #6b7390;
+    --accent: #8b7cf8;
+    --accent-2: #38bdf8;
+    --accent-3: #22d3ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+  .bg {
+    position: fixed; inset: 0; z-index: -1; overflow: hidden;
+    background: radial-gradient(ellipse 70% 55% at 50% -10%, rgba(139, 124, 248, 0.12), transparent 60%), var(--bg);
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .45; }
+  .blob-1 { width: 500px; height: 500px; right: -140px; top: -60px; background: radial-gradient(circle, #7c3aed, #4f46e5 60%, transparent 75%); animation: drift 16s ease-in-out infinite alternate; }
+  .blob-2 { width: 420px; height: 420px; left: -160px; top: 45%; background: radial-gradient(circle, #0ea5e9, #2563eb 60%, transparent 75%); opacity: .3; animation: drift 22s ease-in-out infinite alternate-reverse; }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(-50px, 40px) scale(1.15); } }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 44px 20px 64px; }
+
+  /* 标签栏 */
+  .tabs {
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+  .tab {
+    padding: 12px 20px; border-radius: 999px;
+    color: var(--text-dim); font-size: .9rem; text-decoration: none;
+    background: var(--glass); border: 1px solid var(--stroke);
+    transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+  .tab:hover { color: var(--text); border-color: var(--stroke-strong); transform: translateY(-1px); }
+  .tab.active {
+    background: linear-gradient(135deg, rgba(139,124,248,.85), rgba(56,189,248,.75));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 8px 20px rgba(139,124,248,.35);
+  }
+
+  .page-head { text-align: center; margin-bottom: 34px; }
+  .page-head h1 {
+    font-family: "Sora", "Noto Sans SC", system-ui, sans-serif;
+    font-size: clamp(1.6rem, 4.5vw, 2.2rem); font-weight: 700; letter-spacing: -.02em;
+    background: linear-gradient(180deg, #fff 30%, #b9c2e8);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .page-head p { color: var(--text-dim); font-size: .9rem; margin-top: 8px; }
+
+  .cards { display: grid; grid-template-columns: 1fr; gap: 14px; }
+
+  .card {
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 22px; border-radius: 20px;
+    background: var(--glass); border: 1px solid var(--stroke);
+    backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(139,124,248,.45);
+    box-shadow: 0 16px 40px rgba(0,0,0,.45);
+  }
+  .card.empty { justify-content: center; padding: 44px 22px; text-align: center; }
+  .card.empty p { color: var(--text-faint); font-size: .95rem; }
+
+  .icon {
+    flex: none; width: 56px; height: 56px; border-radius: 15px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.06); border: 1px solid var(--stroke);
+  }
+  .icon svg { width: 30px; height: 30px; }
+
+  .info { flex: 1; min-width: 0; }
+  .info .row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .info h3 { font-family: "Sora", "Noto Sans SC", system-ui, sans-serif; font-size: 1.1rem; font-weight: 700; }
+  .info .ver { font-size: .88rem; color: var(--text-faint); }
+  .info p { color: var(--text-dim); font-size: .88rem; margin-top: 3px; }
+  .badge {
+    font-size: .72rem; padding: 3px 10px; border-radius: 999px;
+    background: rgba(56,189,248,.15); border: 1px solid rgba(56,189,248,.35);
+    color: var(--accent-2);
+  }
+
+  .btn {
+    flex: none; display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 999px;
+    background: linear-gradient(135deg, rgba(139,124,248,.85), rgba(56,189,248,.75));
+    border: 1px solid rgba(255,255,255,.18); color: #fff;
+    font-size: .92rem; font-weight: 600; text-decoration: none; cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .btn svg { width: 16px; height: 16px; }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 10px 24px rgba(139,124,248,.35); }
+  .btn:active { transform: translateY(0); }
+  .btn.ghost {
+    background: var(--glass-strong); color: var(--text); border-color: var(--stroke-strong);
+    font-weight: 500;
+  }
+
+  .card .status { flex: none; text-align: right; }
+  .status .err { color: #fca5a5; font-size: .8rem; max-width: 200px; }
+
+  footer { margin-top: 40px; text-align: center; color: var(--text-faint); font-size: .82rem; }
+  footer a { color: var(--accent-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .card { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .status { text-align: left; }
+    .btn { width: 100%; justify-content: center; }
+    .tab { padding: 12px 15px; font-size: .85rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<main class="wrap">
+
+  <nav class="tabs" aria-label="平台切换">
+    <a class="tab" href="all.html">All</a>
+    <a class="tab active" href="index.html">Windows</a>
+    <a class="tab" href="linux.html">Linux</a>
+    <a class="tab" href="macos.html">MacOS</a>
+    <a class="tab" href="android.html">Android</a>
+  </nav>
+
+  <div class="page-head">
+    <h1>Windows 应用下载</h1>
+    <p>Windows x64 · 常用软件收集，全部免费直链</p>
+  </div>
+
+  <section class="cards">
+
+    <!-- UU远程 -->
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="13" rx="2"/>
+          <path d="M8 21h8M12 17v4"/>
+          <path d="M7 11l4 2.5-4 2.5M12.5 13h4"/>
+        </svg>
+      </div>
+      <div class="info">
+        <div class="row">
+          <h3>UU远程</h3>
+          <span class="ver">网易官方 · 最新版</span>
+        </div>
+        <p>网易旗下远程控制工具，免费、不限速，支持手机/电脑互控。</p>
+      </div>
+      <div class="status">
+        <a class="btn" href="https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+          下载
+        </a>
+      </div>
+    </div>
+
+    <!-- AutoHotkey -->
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <path d="M9 8v8M15 8v8M9 12h6"/>
+        </svg>
+      </div>
+      <div class="info">
+        <div class="row">
+          <h3>AutoHotkey</h3>
+          <span class="ver">v2 · 官方最新版</span>
+        </div>
+        <p>Windows 自动化脚本神器，热键、宏、GUI 一把梭，绿色轻量。</p>
+      </div>
+      <div class="status">
+        <a class="btn" href="https://www.autohotkey.com/download/ahk-v2.exe" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+          下载
+        </a>
+      </div>
+    </div>
+
+    <!-- Listen1 -->
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"/>
+          <circle cx="6" cy="18" r="3"/>
+          <circle cx="18" cy="16" r="3"/>
+        </svg>
+      </div>
+      <div class="info">
+        <div class="row">
+          <h3>Listen1</h3>
+          <span class="ver" id="l1-ver">GitHub 最新版…</span>
+        </div>
+        <p>聚合音乐播放器，一站听遍网易云 / QQ / 酷狗 / 酷我 / B 站等平台。</p>
+      </div>
+      <div class="status" id="l1-status">
+        <a class="btn ghost" id="l1-btn" href="https://github.com/listen1/listen1_desktop/releases/latest" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+          查看最新版
+        </a>
+      </div>
+    </div>
+
+  </section>
+
+  <footer>
+    <a href="../index.html">← 返回首页</a>
+    <span style="margin:0 10px;opacity:.4">|</span>
+    Copyright 2026 JimmyXiao
+  </footer>
+
+</main>
+
+<script>
+(function () {
+  // Listen1: 从 GitHub 最新 release 拉取 win_x64 安装包
+  var verEl = document.getElementById('l1-ver');
+  var btn = document.getElementById('l1-btn');
+
+  fetch('https://api.github.com/repos/listen1/listen1_desktop/releases/latest')
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      var asset = (j.assets || []).filter(function (a) {
+        return /win_x64\.exe$/i.test(a.name);
+      })[0];
+      if (!asset) throw new Error('未找到 win_x64.exe 安装包');
+      if (j.tag_name) verEl.textContent = j.tag_name + ' · 官方最新版';
+      btn.href = asset.browser_download_url;
+      btn.textContent = '下载';
+      btn.classList.remove('ghost');
+    })
+    .catch(function (e) {
+      verEl.textContent = '获取版本失败';
+      var err = document.createElement('div');
+      err.className = 'err';
+      err.textContent = '自动获取失败：' + e.message + '，请点击下方按钮前往 Releases 手动下载';
+      document.getElementById('l1-status').appendChild(err);
+    });
+})();
+</script>
+
+</body>
+</html>
