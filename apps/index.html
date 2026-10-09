@@ -289,7 +289,7 @@
           var btn = document.getElementById('dyn-' + idx);
           if (btn) {
             btn.href = asset.browser_download_url;
-            btn.textContent = '下载';
+            btn.innerHTML = ICONS.dl + '下载';
             btn.classList.remove('ghost');
           }
         })
