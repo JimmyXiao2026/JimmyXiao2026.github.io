@@ -1,0 +1,44 @@
+# JimmyXiao 应用下载数据
+# 平台列表：新增平台在这里加一行
+platforms:
+  - id: windows
+    label: Windows
+  - id: linux
+    label: Linux
+  - id: macos
+    label: MacOS
+  - id: android
+    label: Android
+
+# 软件列表：按下面格式复制一行即可新增
+#   name:       软件名
+#   platform:   所属平台（必须是上面 platforms 里的 id）
+#   version:    显示在名字旁边的版本说明，可留空 ""
+#   desc:       一句话简介
+#   url:        下载直链
+#   icon:       图标，可选 remote / key / music / default
+#   dynamic:    可选。配置后页面会自动从 GitHub 拉最新版并更新按钮直链
+#     repo:        GitHub 仓库名（owner/repo）
+#     assetPattern: 匹配安装包文件名的正则（JS 正则写法）
+apps:
+  - name: UU远程
+    platform: windows
+    version: 网易官方 · 最新版
+    desc: 网易旗下远程控制工具，免费、不限速，支持手机/电脑互控。
+    url: https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd
+    icon: remote
+  - name: AutoHotkey
+    platform: windows
+    version: v2 · 官方最新版
+    desc: Windows 自动化脚本神器，热键、宏、GUI 一把梭，绿色轻量。
+    url: https://www.autohotkey.com/download/ahk-v2.exe
+    icon: key
+  - name: Listen1
+    platform: windows
+    version: GitHub 最新版…
+    desc: 聚合音乐播放器，一站听遍网易云 / QQ / 酷狗 / 酷我 / B 站等平台。
+    url: https://github.com/listen1/listen1_desktop/releases/latest
+    icon: music
+    dynamic:
+      repo: listen1/listen1_desktop
+      assetPattern: win_x64\.exe$

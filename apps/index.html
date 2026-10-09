@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Windows 应用下载 · JimmyXiao</title>
+<title>应用下载 · JimmyXiao</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" />
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <style>
   :root {
     --bg: #05060e;
@@ -88,6 +89,7 @@
   }
   .card.empty { justify-content: center; padding: 44px 22px; text-align: center; }
   .card.empty p { color: var(--text-faint); font-size: .95rem; }
+  .card.loading p { color: var(--text-dim); }
 
   .icon {
     flex: none; width: 56px; height: 56px; border-radius: 15px;
@@ -150,92 +152,23 @@
 
 <main class="wrap">
 
-  <nav class="tabs" aria-label="平台切换">
-    <a class="tab" href="all.html">All</a>
-    <a class="tab active" href="index.html">Windows</a>
-    <a class="tab" href="linux.html">Linux</a>
-    <a class="tab" href="macos.html">MacOS</a>
-    <a class="tab" href="android.html">Android</a>
+  <nav class="tabs" id="tabs" aria-label="平台切换">
+    <a class="tab" href="#all" data-platform="all">All</a>
+    <a class="tab" href="#windows" data-platform="windows">Windows</a>
+    <a class="tab" href="#linux" data-platform="linux">Linux</a>
+    <a class="tab" href="#macos" data-platform="macos">MacOS</a>
+    <a class="tab" href="#android" data-platform="android">Android</a>
   </nav>
 
   <div class="page-head">
-    <h1>Windows 应用下载</h1>
-    <p>Windows x64 · 常用软件收集，全部免费直链</p>
+    <h1 id="h1">应用下载</h1>
+    <p>常用软件收集 · 全部免费直链</p>
   </div>
 
-  <section class="cards">
-
-    <!-- UU远程 -->
-    <div class="card">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="13" rx="2"/>
-          <path d="M8 21h8M12 17v4"/>
-          <path d="M7 11l4 2.5-4 2.5M12.5 13h4"/>
-        </svg>
-      </div>
-      <div class="info">
-        <div class="row">
-          <h3>UU远程</h3>
-          <span class="ver">网易官方 · 最新版</span>
-        </div>
-        <p>网易旗下远程控制工具，免费、不限速，支持手机/电脑互控。</p>
-      </div>
-      <div class="status">
-        <a class="btn" href="https://api.nrd.nie.163.com/api/v1/release/dl/1?channel=gwqd" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
-          下载
-        </a>
-      </div>
+  <section class="cards" id="cards">
+    <div class="card loading">
+      <div class="info"><p>正在加载 apps.yml…</p></div>
     </div>
-
-    <!-- AutoHotkey -->
-    <div class="card">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="3"/>
-          <path d="M9 8v8M15 8v8M9 12h6"/>
-        </svg>
-      </div>
-      <div class="info">
-        <div class="row">
-          <h3>AutoHotkey</h3>
-          <span class="ver">v2 · 官方最新版</span>
-        </div>
-        <p>Windows 自动化脚本神器，热键、宏、GUI 一把梭，绿色轻量。</p>
-      </div>
-      <div class="status">
-        <a class="btn" href="https://www.autohotkey.com/download/ahk-v2.exe" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
-          下载
-        </a>
-      </div>
-    </div>
-
-    <!-- Listen1 -->
-    <div class="card">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18V5l12-2v13"/>
-          <circle cx="6" cy="18" r="3"/>
-          <circle cx="18" cy="16" r="3"/>
-        </svg>
-      </div>
-      <div class="info">
-        <div class="row">
-          <h3>Listen1</h3>
-          <span class="ver" id="l1-ver">GitHub 最新版…</span>
-        </div>
-        <p>聚合音乐播放器，一站听遍网易云 / QQ / 酷狗 / 酷我 / B 站等平台。</p>
-      </div>
-      <div class="status" id="l1-status">
-        <a class="btn ghost" id="l1-btn" href="https://github.com/listen1/listen1_desktop/releases/latest" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
-          查看最新版
-        </a>
-      </div>
-    </div>
-
   </section>
 
   <footer>
@@ -248,29 +181,132 @@
 
 <script>
 (function () {
-  // Listen1: 从 GitHub 最新 release 拉取 win_x64 安装包
-  var verEl = document.getElementById('l1-ver');
-  var btn = document.getElementById('l1-btn');
+  'use strict';
 
-  fetch('https://api.github.com/repos/listen1/listen1_desktop/releases/latest')
-    .then(function (r) { return r.json(); })
-    .then(function (j) {
-      var asset = (j.assets || []).filter(function (a) {
-        return /win_x64\.exe$/i.test(a.name);
-      })[0];
-      if (!asset) throw new Error('未找到 win_x64.exe 安装包');
-      if (j.tag_name) verEl.textContent = j.tag_name + ' · 官方最新版';
-      btn.href = asset.browser_download_url;
-      btn.textContent = '下载';
-      btn.classList.remove('ghost');
-    })
-    .catch(function (e) {
-      verEl.textContent = '获取版本失败';
-      var err = document.createElement('div');
-      err.className = 'err';
-      err.textContent = '自动获取失败：' + e.message + '，请点击下方按钮前往 Releases 手动下载';
-      document.getElementById('l1-status').appendChild(err);
+  var ICONS = {
+    remote: '<svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 11l4 2.5-4 2.5M12.5 13h4"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 8v8M15 8v8M9 12h6"/></svg>',
+    music: '<svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    default: '<svg viewBox="0 0 24 24" fill="none" stroke="#8b7cf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h6l-2 8 10-12h-6z"/></svg>',
+    dl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>'
+  };
+
+  var PLATFORMS = ['all', 'windows', 'linux', 'macos', 'android'];
+  var data = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+
+  function currentPlatform() {
+    var h = (location.hash || '').replace('#', '');
+    return PLATFORMS.indexOf(h) >= 0 ? h : 'windows';
+  }
+
+  function platformLabel(id) {
+    var p = (data && data.platforms || []).filter(function (x) { return x.id === id; })[0];
+    return p ? p.label : id;
+  }
+
+  function render() {
+    var p = currentPlatform();
+
+    var tabs = document.querySelectorAll('#tabs .tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle('active', tabs[i].getAttribute('data-platform') === p);
+    }
+
+    var title, h1;
+    if (p === 'all') { title = '全部应用下载'; h1 = title; }
+    else { title = platformLabel(p) + ' 应用下载'; h1 = title; }
+    document.title = title + ' · JimmyXiao';
+    document.getElementById('h1').textContent = h1;
+
+    var list = data.apps.filter(function (a) { return p === 'all' || a.platform === p; });
+    var cards = document.getElementById('cards');
+
+    if (!list.length) {
+      cards.innerHTML = '<div class="card empty"><div class="info"><p>该平台暂无收录应用，敬请期待。</p></div></div>';
+      return;
+    }
+
+    cards.innerHTML = list.map(function (a, idx) {
+      var badge = p === 'all' ? '<span class="badge">' + esc(platformLabel(a.platform)) + '</span>' : '';
+      var verId = 'ver-' + idx;
+      var dyn = a.dynamic;
+      var btn;
+      if (dyn) {
+        btn = '<a class="btn ghost" id="dyn-' + idx + '" href="' + esc(a.url) + '" target="_blank" rel="noopener">' + ICONS.dl + '查看最新版</a>';
+      } else {
+        btn = '<a class="btn" href="' + esc(a.url) + '" target="_blank" rel="noopener">' + ICONS.dl + '下载</a>';
+      }
+      return '<div class="card">'
+        + '<div class="icon">' + (ICONS[a.icon] || ICONS.default) + '</div>'
+        + '<div class="info">'
+        +   '<div class="row"><h3>' + esc(a.name) + '</h3>' + badge + '<span class="ver" id="' + verId + '">' + esc(a.version || '') + '</span></div>'
+        +   '<p>' + esc(a.desc || '') + '</p>'
+        + '</div>'
+        + '<div class="status">' + btn + '</div>'
+        + '</div>';
+    }).join('');
+
+    // dynamic：从 GitHub 拉最新版，更新版本号和直链
+    list.forEach(function (a, idx) {
+      if (!a.dynamic) return;
+      fetch('https://api.github.com/repos/' + a.dynamic.repo + '/releases/latest')
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var asset = (j.assets || []).filter(function (x) {
+            return new RegExp(a.dynamic.assetPattern, 'i').test(x.name);
+          })[0];
+          if (!asset) throw new Error('未找到匹配安装包');
+          var verEl = document.getElementById('ver-' + idx);
+          if (verEl && j.tag_name) verEl.textContent = j.tag_name + ' · 官方最新版';
+          var btn = document.getElementById('dyn-' + idx);
+          if (btn) {
+            btn.href = asset.browser_download_url;
+            btn.textContent = '下载';
+            btn.classList.remove('ghost');
+          }
+        })
+        .catch(function (e) {
+          var verEl = document.getElementById('ver-' + idx);
+          if (verEl) verEl.textContent = '获取版本失败';
+          var btn = document.getElementById('dyn-' + idx);
+          if (btn && btn.parentNode) {
+            var err = document.createElement('div');
+            err.className = 'err';
+            err.textContent = '自动获取失败：' + e.message + '，请点击按钮前往 Releases 手动下载';
+            btn.parentNode.appendChild(err);
+          }
+        });
+    });
+  }
+
+  function load() {
+    fetch('apps.yml', { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function (t) {
+        data = window.jsyaml.load(t);
+        if (!data || !data.apps) throw new Error('apps.yml 格式不正确');
+        render();
+      })
+      .catch(function (e) {
+        document.getElementById('cards').innerHTML =
+          '<div class="card empty"><div class="info"><p>加载 apps.yml 失败：' + esc(e.message)
+          + '。本地 file:// 直接打开会被浏览器拦截，请用本地 HTTP 服务预览或直接访问线上地址。</p></div></div>';
+      });
+  }
+
+  window.addEventListener('hashchange', function () {
+    if (data) render();
+  });
+  load();
 })();
 </script>
 
