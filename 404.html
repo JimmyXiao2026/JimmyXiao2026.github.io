@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hans">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Link Expander — make any link as long as you want</title>
-<meta name="description" content="Turn any link into a much longer one of exactly the length you ask for, protocol included. Plenty of people try to make links shorter — so what if one is longer?">
+<title>链接加长器 — 让任何链接变得要多长有多长</title>
+<meta name="description" content="把任意链接加长到你指定的精确长度（含协议头）。大家都在想办法把链接变短——长一点又怎么样呢？">
 <meta name="theme-color" content="#ffffff">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://jimmyxiao2026.github.io/longurl/">
@@ -13,17 +13,17 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Link Expander">
 <meta property="og:url" content="https://jimmyxiao2026.github.io/longurl/">
-<meta property="og:title" content="Link Expander — make any link as long as you want">
-<meta property="og:description" content="Turn any link into a much longer one of exactly the length you ask for, protocol included. Plenty of people try to make links shorter — so what if one is longer?">
+<meta property="og:title" content="链接加长器 — 让任何链接变得要多长有多长">
+<meta property="og:description" content="把任意链接加长到你指定的精确长度（含协议头）。大家都在想办法把链接变短——长一点又怎么样呢？">
 <meta property="og:image" content="https://jimmyxiao2026.github.io/longurl/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Link Expander — plenty of people try to make links shorter. So what if one is longer?">
-<meta property="og:locale" content="en_US">
-<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:image:alt" content="链接加长器 — 大家都在想办法把链接变短，长一点又怎么样呢？">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Link Expander — make any link as long as you want">
-<meta name="twitter:description" content="Turn any link into a much longer one of exactly the length you ask for, protocol included.">
+<meta name="twitter:title" content="链接加长器 — 让任何链接变得要多长有多长">
+<meta name="twitter:description" content="把任意链接加长到你指定的精确长度（含协议头）。">
 <meta name="twitter:image" content="https://jimmyxiao2026.github.io/longurl/og.png">
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -37,7 +37,7 @@
   "alternateName": "链接加长器",
   "url": "https://jimmyxiao2026.github.io/longurl/",
   "sameAs": "https://github.com/JwbFut/link-expander",
-  "description": "Turn any link into a much longer link of exactly the length you ask for, protocol included. The extra characters are meaningless noise that pads the link out, and opening it goes to your destination.",
+  "description": "把任意链接加长到你指定的精确长度（含协议头）。多余的字符是基于种子生成的噪音，打开链接会跳转到你的目标地址。",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any web browser",
   "browserRequirements": "Requires JavaScript",
@@ -61,67 +61,63 @@ if (__p.length > 0 && !/^\/(index\.html)?$/.test(__p)) {
 </script>
 </head>
 <body>
-<button id="lang" class="toggle" type="button" aria-label="Switch language / 切换语言">中文</button>
+<button id="lang" class="toggle" type="button" aria-label="切换语言 / Switch language">English</button>
 
 <noscript>
-  <p>This page is a tiny single-page app: the form needs JavaScript to build a link. /
-  本页是一个小型单页应用，生成链接需要 JavaScript。</p>
+  <p>本页是一个小型单页应用，生成链接需要 JavaScript。（This page needs JavaScript to build a link.）</p>
 </noscript>
 
 <main>
   <section id="view-generator">
-    <h1 id="title">Link Expander</h1>
-    <p class="st" id="subtitle">Plenty of people try to make links shorter. So what if one is longer?</p>
+    <h1 id="title">链接加长器</h1>
+    <p class="st" id="subtitle">很多人都在想办法把链接变短，长一点又怎么样呢？</p>
 
     <form id="form" novalidate>
       <p>
-        <label for="target" id="label-target">Link to expand</label>
+        <label for="target" id="label-target">要加长的链接</label>
         <input id="target" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
                placeholder="https://example.com">
       </p>
       <p>
-        <label for="seed" id="label-seed">Random seed (optional)</label>
+        <label for="seed" id="label-seed">随机种子（可选）</label>
         <input id="seed" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-               placeholder="leave empty for a random one">
+               placeholder="留空则随机生成一个">
       </p>
       <p>
-        <label for="length" id="label-length">Total length, protocol included (characters)</label>
+        <label for="length" id="label-length">目标总长度，含协议头（字符数）</label>
         <input id="length" type="number" inputmode="numeric" min="1" step="1" value="128">
       </p>
-      <p><button type="submit" id="submit">Expand</button></p>
+      <p><button type="submit" id="submit">加长</button></p>
     </form>
 
     <p id="message" class="message" role="alert" aria-live="polite" hidden></p>
 
     <section id="result" hidden>
-      <p><label for="output" id="label-result">Your very long link</label></p>
+      <p><label for="output" id="label-result">你的超长链接</label></p>
       <textarea id="output" rows="3" readonly spellcheck="false"></textarea>
       <p class="meta">
-        <button type="button" id="copy">Copy</button>
+        <button type="button" id="copy">复制</button>
         <span id="count" class="count"></span>
       </p>
-      <p><a id="open" href="#" rel="noopener">Open it to check that it works</a></p>
+      <p><a id="open" href="#" rel="noopener">打开测试一下</a></p>
     </section>
 
-    <h2 id="how-title">How does it work?</h2>
-    <p id="how-body">Only a handful of characters carry your destination and the seed; everything else is
-      noise derived from that seed, padding the link out to the exact length you asked for. The same
-      destination, seed and length always rebuild the identical link, so nothing is lost on the way — and
-      opening the link goes to your destination.</p>
-    <p id="limits-body">Up to 8192 characters works. Past 2000, some browsers, chat apps and mail clients
-      start truncating, and the page warns you when you go that far. The destination has to be an
-      http:// or https:// link.</p>
-    <p class="credit"><span id="credit-text">Plain HTML, CSS and JS, no tracking. Styled after </span><a
+    <h2 id="how-title">这是怎么做到的？</h2>
+    <p id="how-body">链接里只有少数几个字符记录了目标地址和种子，其余都是根据种子生成的噪音，用来把链接凑到你要求的长度。
+      相同的目标地址、种子和长度永远能复原出一模一样的链接，不会丢东西；打开链接就会跳到你的目标地址。</p>
+    <p id="limits-body">最长支持 8192 个字符；超过 2000 时，部分浏览器、聊天软件和邮件客户端会开始截断，到那一步页面会提醒你。
+      目标地址必须以 http:// 或 https:// 开头。</p>
+    <p class="credit"><span id="credit-text">纯 HTML、CSS 和 JS，没有任何追踪。风格参照 </span><a
       href="https://thebestmotherfuckingweb.site" rel="noopener">thebestmotherfuckingweb.site</a>
-      · <a id="credit-repo" href="https://github.com/JwbFut/link-expander" rel="noopener">Source on GitHub</a></p>
+      · <a id="credit-repo" href="https://github.com/JwbFut/link-expander" rel="noopener">GitHub 源码</a></p>
   </section>
 
   <section id="view-redirect" hidden>
-    <h1 id="redirect-title">Taking you there…</h1>
-    <p id="redirect-manual">If nothing happens, open this link:</p>
+    <h1 id="redirect-title">正在跳转…</h1>
+    <p id="redirect-manual">如果没有自动跳转，请打开这个链接：</p>
     <p><a id="redirect-link" href="#"></a></p>
     <p id="redirect-note" class="message" hidden></p>
-    <p class="credit"><a id="redirect-home" href="./">← Link Expander</a></p>
+    <p class="credit"><a id="redirect-home" href="./">← 链接加长器</a></p>
   </section>
 </main>
 
