@@ -225,6 +225,17 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
   }
+  .repo-error {
+    grid-column: 1 / -1;
+    padding: 26px;
+    border-radius: var(--radius-md);
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    color: var(--text-dim);
+    text-align: center;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
   .card {
     position: relative;
     padding: 26px;
@@ -537,7 +548,10 @@
     'Shell': '#89e051', 'TypeScript': '#3178c6'
   };
   fetch('https://api.github.com/users/JimmyXiao2026/repos?sort=updated&per_page=50')
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    })
     .then(function (list) {
       if (!Array.isArray(list)) throw new Error('bad response');
       var repos = list.filter(function (x) { return !x.fork && x.name !== 'JimmyXiao2026.github.io'; });
@@ -564,7 +578,10 @@
       var cards = repoList.querySelectorAll('.card.reveal');
       for (var i = 0; i < cards.length; i++) io.observe(cards[i]);
     })
-    .catch(function () { /* 拉取失败：保留静态演示卡片 */ });
+    .catch(function (e) {
+      var hint = (e && e.message === 'http 403') ? '（可能触发了 GitHub API 限速，稍后再试）' : '';
+      repoList.innerHTML = '<div class="repo-error" role="alert">项目列表加载失败，请稍后刷新重试。' + hint + '</div>';
+    });
 
   // ===== Toast for placeholder buttons =====
   var toast = document.getElementById('toast');
