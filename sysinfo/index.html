@@ -154,6 +154,17 @@ tr:hover {
     </header>
 
     <section class="glass-card">
+        <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
+        <div id="privacyBox">
+            <p class="status-warn">检测中...</p>
+        </div>
+        <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+        <noscript>
+            <div style="color:#fca5a5;margin-top:12px;">❌ JavaScript 已被禁用</div>
+        </noscript>
+    </section>
+
+    <section class="glass-card">
         <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
         <div id="uaBox">
             <p class="status-warn">解析中...</p>
@@ -222,6 +233,36 @@ function makeTable(rows) {
     return html;
 }
 
+// ========== 隐私、DNT/GPC、广告拦截诱饵检测 ==========
+(function(){
+    const box = document.getElementById("privacyBox");
+    const baitEl = document.getElementById("ad-bait");
+    let adBlockDetected = false;
+
+    setTimeout(()=>{
+        if(!baitEl || baitEl.offsetParent === null){
+            adBlockDetected = true;
+        }
+
+        const dnt = navigator.doNotTrack;
+        let dntText;
+        if(dnt === "1") dntText = "✅ 已开启（拒绝跟踪）";
+        else if(dnt === "0") dntText = "❌ 关闭（允许跟踪）";
+        else dntText = "⚠️ 未声明/浏览器不支持";
+
+        const gpc = navigator.globalPrivacyControl;
+        const gpcText = gpc === true ? "✅ 已开启" : (gpc === false ? "❌ 关闭" : "⚠️ 不支持");
+
+        const rows = [
+            ["JavaScript状态", "✅ 已启用（noscript无触发）"],
+            ["Do Not Track (DNT)", dntText],
+            ["Global Privacy Control(GPC)", gpcText],
+            ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
+        ];
+        box.innerHTML = makeTable(rows);
+    }, 300);
+})();
+
 // ========== UA解析：增加 Client Hints bitness(64/32位)，对齐whatsmyua ==========
 (async function(){
     const box = document.getElementById("uaBox");
@@ -231,9 +272,9 @@ function makeTable(rows) {
 
     let arch = cpu.architecture || "未知";
     let bitness = "不支持（非Chromium）";
-    let platformVerHint = "-";
+    let platformVerRaw = "-";
+    let osNameHint = "-";
 
-    // 高熵客户端提示，和whatsmyua同源逻辑
     if(navigator.userAgentData?.getHighEntropyValues){
         try{
             const hint = await navigator.userAgentData.getHighEntropyValues([
@@ -243,7 +284,15 @@ function makeTable(rows) {
             ]);
             arch = hint.architecture || arch;
             bitness = hint.bitness + " bit";
-            platformVerHint = hint.platformVersion;
+            platformVerRaw = hint.platformVersion;
+            const major = parseInt(platformVerRaw.split('.')[0]);
+            if(navigator.userAgentData.platform === "Windows"){
+                if(major >= 13) osNameHint = "Windows 11";
+                else if(major > 0) osNameHint = "Windows 10";
+                else osNameHint = "Windows 7/8";
+            }else{
+                osNameHint = navigator.userAgentData.platform;
+            }
         }catch(e){}
     }
 
@@ -252,7 +301,8 @@ function makeTable(rows) {
         ["浏览器版本", browser.version || "未知"],
         ["系统名称(UA)", os.name || "未知"],
         ["系统版本(UA)", os.version || "未知"],
-        ["系统版本(ClientHint)", platformVerHint],
+        ["系统识别结果(ClientHint)", osNameHint],
+        ["原始platformVersion", platformVerRaw],
         ["CPU架构", arch],
         ["CPU位宽", bitness]
     ];
