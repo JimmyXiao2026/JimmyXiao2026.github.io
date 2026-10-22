@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>404 Not Found</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b7cf8'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230a0e1a'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='url(%23g)' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='url(%23g)'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" />
+<style>
+  /* ============ Tokens 和主页完全一致 ============ */
+  :root {
+    --bg: #05060e;
+    --glass: rgba(255, 255, 255, 0.045);
+    --glass-strong: rgba(255, 255, 255, 0.08);
+    --stroke: rgba(255, 255, 255, 0.09);
+    --stroke-strong: rgba(255, 255, 255, 0.16);
+    --text: #e8ecf8;
+    --text-dim: #9aa3bd;
+    --text-faint: #6b7390;
+    --accent: #8b7cf8;
+    --accent-2: #38bdf8;
+    --accent-3: #22d3ee;
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-pill: 999px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+  .font-display { font-family: "Sora", "Noto Sans SC", system-ui, sans-serif; }
+
+  /* ============ Ambient background 和主页完全一致 ============ */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139, 124, 248, 0.12), transparent 60%),
+      var(--bg);
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+  .blob-1 {
+    width: 520px; height: 520px;
+    right: -120px; top: 8%;
+    background: radial-gradient(circle, #7c3aed 0%, #4f46e5 60%, transparent 75%);
+    animation: drift1 18s ease-in-out infinite alternate;
+  }
+  .blob-2 {
+    width: 420px; height: 420px;
+    left: -140px; top: 40%;
+    background: radial-gradient(circle, #0ea5e9 0%, #2563eb 60%, transparent 75%);
+    opacity: 0.35;
+    animation: drift2 22s ease-in-out infinite alternate;
+  }
+  .blob-3 {
+    width: 380px; height: 380px;
+    left: 30%; bottom: -160px;
+    background: radial-gradient(circle, #22d3ee 0%, #0891b2 60%, transparent 75%);
+    opacity: 0.28;
+    animation: drift3 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-60px, 40px) scale(1.15); } }
+  @keyframes drift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(50px, -50px) scale(1.1); } }
+  @keyframes drift3 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-40px, -30px) scale(1.2); } }
+
+  .bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ============ Layout ============ */
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 404 玻璃卡片，复用hero卡片样式 */
+  .page-404-card {
+    position: relative;
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius-lg);
+    padding: 60px 36px;
+    text-align: center;
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    max-width: 520px;
+    width: 100%;
+  }
+  .page-404-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+    pointer-events: none;
+  }
+
+  .code-404 {
+    font-family: "Sora", sans-serif;
+    font-size: clamp(5rem,14vw,8rem);
+    font-weight: 800;
+    background: linear-gradient(180deg, #ffffff 30%, #8b94c9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height:1;
+    margin-bottom:16px;
+  }
+  .title-404{
+    font-size:1.4rem;
+    color:var(--text);
+    margin-bottom:12px;
+  }
+  .desc-404{
+    color:var(--text-dim);
+    margin-bottom:32px;
+  }
+
+  /* 按钮复用主页btn样式 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 26px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-strong);
+    border: 1px solid var(--stroke);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.13);
+    border-color: var(--stroke-strong);
+    box-shadow: 0 10px 28px rgba(139, 124, 248, 0.22);
+  }
+  .btn:active { transform: translateY(0); }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 720px) {
+    .wrap { padding:24px 16px; }
+    .page-404-card { padding:40px 20px; border-radius:22px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+<!-- 和主页一模一样的背景 -->
+<div class="bg" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<main class="wrap">
+  <div class="page-404-card">
+    <div class="code-404">404</div>
+    <h2 class="title-404">Not Found</h2>
+    <p class="desc-404">你访问的页面不存在，链接可能已经失效或被移除。</p>
+    <a class="btn" href="/">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 12 7-7v4h11v6H10v4z"/>
+      </svg>
+      返回主页
+    </a>
+  </div>
+</main>
+
+</body>
+</html>
