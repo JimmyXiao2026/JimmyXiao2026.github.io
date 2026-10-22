@@ -144,6 +144,26 @@ tr:hover {
 .btn:hover {
     background: rgba(255,255,255,0.14);
 }
+.ip-link {
+    display: inline-block;
+    margin: 4px 6px 4px 0;
+    color: #7dd3fc;
+}
+.ip-link:hover {
+    color: #bae6fd;
+}
+.footer-note {
+    margin-top:40px;
+    text-align:center;
+    color: var(--text-secondary);
+    font-size:14px;
+}
+.footer-note a {
+    color:#7dd3fc;
+}
+.footer-note a:hover {
+    color:#bae6fd;
+}
 </style>
 </head>
 <body>
@@ -153,78 +173,108 @@ tr:hover {
         <p class="desc">仅读取Web标准开放信息；网页无法读取MAC、硬盘序列号、显卡温度、功耗等底层硬件数据</p>
     </header>
 
-    <section class="glass-card">
-        <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
-        <div id="privacyBox">
-            <p class="status-warn">检测中...</p>
-        </div>
-        <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
-        <noscript>
-            <div style="color:#fca5a5;margin-top:12px;">❌ JavaScript 已被禁用</div>
-        </noscript>
-    </section>
+    <noscript>
+        <section class="glass-card">
+            <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
+            <div id="privacyBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
+            <div id="uaBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>WebGPU 适配器信息</h2>
+            <div id="webgpuBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>WebGL2 渲染信息（区分软件层/硬件）</h2>
+            <div id="webglBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>基础环境信息</h2>
+            <div id="baseBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🌐 网络信息（IPv4 / IPv6分离）</h2>
+            <div id="netBox">
+                ❌ JavaScript 已被禁用，无法自动获取IP<br>
+                <a class="ip-link" target="_blank" href="https://ipv4.icanhazip.com/">👉 查看 IPv4</a>
+                <a class="ip-link" target="_blank" href="https://ipv6.icanhazip.com/">👉 查看 IPv6</a>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2>🖥️ 屏幕显示信息</h2>
+            <div id="screenBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🔋 电池信息</h2>
+            <div id="batteryBox">❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🔊 音视频设备</h2>
+            <div id="mediaBox">❌ JavaScript 已被禁用</div>
+        </section>
+    </noscript>
 
-    <section class="glass-card">
-        <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
-        <div id="uaBox">
-            <p class="status-warn">解析中...</p>
-        </div>
-    </section>
+    <div id="jsContent">
+        <section class="glass-card">
+            <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
+            <div id="privacyBox"></div>
+            <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>WebGPU 适配器信息</h2>
-        <div id="webgpuBox">
-            <p class="status-warn">正在检测 WebGPU...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
+            <div id="uaBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>WebGL2 渲染信息（区分软件层/硬件）</h2>
-        <div id="webglBox">
-            <p class="status-warn">正在检测 WebGL2...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>WebGPU 适配器信息</h2>
+            <div id="webgpuBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>基础环境信息</h2>
-        <div id="baseBox">
-            <p class="status-warn">检测中...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>WebGL2 渲染信息（区分软件层/硬件）</h2>
+            <div id="webglBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>🌐 网络信息（IPv4 / IPv6分离）</h2>
-        <div id="netBox">
-            <p class="status-warn">正在检测网络信息...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>基础环境信息</h2>
+            <div id="baseBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>🖥️ 屏幕显示信息</h2>
-        <div id="screenBox">
-            <p class="status-warn">正在检测屏幕信息...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>🌐 网络信息（IPv4 / IPv6分离）</h2>
+            <div id="netBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>🔋 电池信息</h2>
-        <div id="batteryBox">
-            <p class="status-warn">正在检测电池信息...</p>
-        </div>
-    </section>
+        <section class="glass-card">
+            <h2>🖥️ 屏幕显示信息</h2>
+            <div id="screenBox"></div>
+        </section>
 
-    <section class="glass-card">
-        <h2>🔊 音视频设备</h2>
-        <button class="btn" onclick="getMediaDevice()">点击授权，读取音视频设备列表</button>
-        <div id="mediaBox">等待授权...</div>
-    </section>
+        <section class="glass-card">
+            <h2>🔋 电池信息</h2>
+            <div id="batteryBox"></div>
+        </section>
+
+        <section class="glass-card">
+            <h2>🔊 音视频设备</h2>
+            <button class="btn" onclick="getMediaDevice()">点击授权，读取音视频设备列表</button>
+            <div id="mediaBox"></div>
+        </section>
+    </div>
+
+    <div class="footer-note">
+        源码位置：<a target="_blank" rel="noopener noreferrer" href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html">https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html</a>
+    </div>
 </div>
 
 <script>
 const parser = new UAParser();
 const uaResult = parser.getResult();
 let isTimeout = false;
-const MAX_TIME = 20000; // 20秒超时
+const MAX_TIME = 20000; // 20秒全局超时
 
 function makeTable(rows) {
     let html = '<table>';
@@ -235,21 +285,31 @@ function makeTable(rows) {
     return html;
 }
 
+// JS启动填充初始文字
+const boxes = [
+    document.getElementById('privacyBox'),
+    document.getElementById('uaBox'),
+    document.getElementById('webgpuBox'),
+    document.getElementById('webglBox'),
+    document.getElementById('baseBox'),
+    document.getElementById('netBox'),
+    document.getElementById('screenBox'),
+    document.getElementById('batteryBox'),
+    document.getElementById('mediaBox')
+];
+boxes[0].innerHTML = `<p class="status-warn">检测中...</p>`;
+boxes[1].innerHTML = `<p class="status-warn">解析中...</p>`;
+for(let i=2;i<boxes.length-1;i++){
+    boxes[i].innerHTML = `<p class="status-warn">检测中...</p>`;
+}
+boxes[boxes.length-1].innerHTML = `等待授权...`;
+
+// 全局20s超时
 function setTimeoutAll() {
     setTimeout(() => {
         isTimeout = true;
-        const els = [
-            document.getElementById('privacyBox'),
-            document.getElementById('uaBox'),
-            document.getElementById('webgpuBox'),
-            document.getElementById('webglBox'),
-            document.getElementById('baseBox'),
-            document.getElementById('netBox'),
-            document.getElementById('screenBox'),
-            document.getElementById('batteryBox')
-        ];
-        els.forEach(el => {
-            if(el.textContent.includes("检测中") || el.textContent.includes("解析中")){
+        boxes.forEach(el => {
+            if(el.textContent.includes("检测中") || el.textContent.includes("解析中") || el.textContent.includes("等待授权")){
                 el.innerHTML = `<p class="status-err">⏱️ 检测超时失败（超过20秒）</p>`;
             }
         })
@@ -257,38 +317,28 @@ function setTimeoutAll() {
 }
 setTimeoutAll();
 
-// ========== 隐私、DNT/GPC、广告拦截诱饵检测 ==========
+// ========== 隐私、广告拦截检测 ==========
 (function(){
     const box = document.getElementById("privacyBox");
-    const baitEl = document.getElementById("ad-bait");
-    let adBlockDetected = false;
+    const bait = document.getElementById("ad-bait");
+    let adBlockDetected = (getComputedStyle(bait).display === 'none' || getComputedStyle(bait).visibility === 'hidden');
 
     setTimeout(()=>{
         if(isTimeout) return;
-        if(!baitEl || baitEl.offsetParent === null){
-            adBlockDetected = true;
-        }
-
         const dnt = navigator.doNotTrack;
-        let dntText;
-        if(dnt === "1") dntText = "✅ 已开启（拒绝跟踪）";
-        else if(dnt === "0") dntText = "❌ 关闭（允许跟踪）";
-        else dntText = "⚠️ 未声明/浏览器不支持";
-
-        const gpc = navigator.globalPrivacyControl;
-        const gpcText = gpc === true ? "✅ 已开启" : (gpc === false ? "❌ 关闭" : "⚠️ 不支持");
+        let dntText = "未开启";
+        if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
 
         const rows = [
-            ["JavaScript状态", "✅ 已启用（noscript无触发）"],
-            ["Do Not Track (DNT)", dntText],
-            ["Global Privacy Control(GPC)", gpcText],
+            ["JavaScript状态", "✅ 已启用"],
+            ["Do Not Track(DNT)", dntText],
             ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
         ];
         box.innerHTML = makeTable(rows);
     }, 300);
 })();
 
-// ========== UA解析：增加 Client Hints bitness(64/32位)，对齐whatsmyua ==========
+// ========== UA + Client Hints ==========
 (async function(){
     const box = document.getElementById("uaBox");
     if(isTimeout) return;
@@ -376,7 +426,7 @@ setTimeoutAll();
     }
 })();
 
-// ========== WebGL2：拆分软件层（ANGLE） / 硬件厂商 ==========
+// ========== WebGL2 ==========
 (function() {
     const box = document.getElementById("webglBox");
     if(isTimeout) return;
@@ -396,7 +446,7 @@ setTimeoutAll();
         rawRenderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
         if(rawRenderer.startsWith("ANGLE (")){
             softwareVendor = "ANGLE (Google)";
-            const match = rawRenderer.match(/ANGLE \(([A-Za-z0-9]+) /);
+            const match = rawRenderer.match(/ANGLE \(([A-Za-z0-9]+)/);
             if(match) hardwareVendor = match[1];
         }else{
             softwareVendor = "原生GL";
@@ -407,18 +457,11 @@ setTimeoutAll();
     const extensions = gl.getSupportedExtensions().join('、');
     const rows = [
         ["软件渲染层", softwareVendor],
-        ["硬件显卡厂商", hardwareVendor],
+        ["硬件显卡信息", hardwareVendor],
         ["原始Vendor字符串", rawVendor],
         ["原始Renderer字符串", rawRenderer],
         ["WebGL版本", gl.getParameter(gl.VERSION)],
-        ["GLSL着色器版本", gl.getParameter(gl.SHADING_LANGUAGE_VERSION)],
-        ["最大纹理尺寸", gl.getParameter(gl.MAX_TEXTURE_SIZE)],
-        ["最大渲染缓冲尺寸", gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)],
-        ["顶点着色器可用纹理单元", gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS)],
-        ["片元着色器可用纹理单元", gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)],
-        ["合并最大纹理单元", gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS)],
-        ["片元着色器统一向量上限", gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS)],
-        ["顶点着色器统一向量上限", gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS)],
+        ["GLSL版本", gl.getParameter(gl.SHADING_LANGUAGE_VERSION)],
         ["支持扩展列表", extensions]
     ];
     box.innerHTML = makeTable(rows);
@@ -439,13 +482,13 @@ setTimeoutAll();
         ["设备像素比", window.devicePixelRatio],
         ["画布底层像素比", backingStore],
         ["CPU逻辑核心数", navigator.hardwareConcurrency],
-        ["用户语言列表", langs],
+        ["浏览器语言列表", langs],
         ["系统时区", tz]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 网络：IPv4、IPv6分开探测 ==========
+// ========== 网络IP（ipv4/ipv6独立） ==========
 async function fetchIp(url, timeout=3000) {
     try {
         const controller = new AbortController();
@@ -459,8 +502,8 @@ async function fetchIp(url, timeout=3000) {
 (async function(){
     const box = document.getElementById("netBox");
     if(isTimeout) return;
-    const ipv4 = await fetchIp("https://api.ipify.org");
-    const ipv6 = await fetchIp("https://api6.ipify.org");
+    const ipv4 = await fetchIp("https://ipv4.icanhazip.com");
+    const ipv6 = await fetchIp("https://ipv6.icanhazip.com");
 
     let localIps = "浏览器隐私策略屏蔽内网IP（新版Chrome/Edge默认）";
     let netType = "不支持";
@@ -497,35 +540,35 @@ async function fetchIp(url, timeout=3000) {
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 屏幕信息 ==========
+// ========== 屏幕 ==========
 (async function(){
     const box = document.getElementById("screenBox");
     if(isTimeout) return;
     let refreshRate = "不支持";
-    let screenList = "不支持getScreenDetails";
+    let screenCount = "不支持getScreenDetails";
     if(window.getScreenDetails) {
         try {
             const details = await window.getScreenDetails();
             refreshRate = details.currentScreen.refreshRate + " Hz";
-            screenList = details.screens.length + " 块显示器";
+            screenCount = details.screens.length + " 块显示器";
         }catch(e){}
     }
     const rows = [
         ["屏幕分辨率", screen.width + " × " + screen.height],
-        ["可用分辨率", screen.availWidth + " × " + screen.height],
+        ["可用分辨率", screen.availWidth + " × " + screen.availHeight],
         ["颜色深度", screen.colorDepth + " bit"],
         ["刷新率", refreshRate],
-        ["显示器数量", screenList]
+        ["显示器数量", screenCount]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 电池，修复Infinity ==========
+// ========== 电池 ==========
 (async function(){
     const box = document.getElementById("batteryBox");
     if(isTimeout) return;
     if(!navigator.getBattery) {
-        box.innerHTML = '<p class="status-warn">当前浏览器不支持Battery API（新版Edge桌面端已移除）</p>';
+        box.innerHTML = '<p class="status-warn">当前浏览器不支持Battery API（新版桌面端已移除）</p>';
         return;
     }
     try {
@@ -546,7 +589,7 @@ async function fetchIp(url, timeout=3000) {
     }
 })();
 
-// ========== 音视频设备 ==========
+// ========== 音视频设备按钮 ==========
 window.getMediaDevice = async function() {
     const box = document.getElementById("mediaBox");
     if(isTimeout){
