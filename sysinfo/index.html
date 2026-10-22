@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>设备信息检测器</title>
-<script src="https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.1/dist/ua-parser.min.js"></script>
+<link rel="icon" href="data:,">
 <style>
 :root {
     --bg-primary: #070a13;
@@ -17,7 +17,7 @@
     --text-secondary: rgba(200, 210, 230, 0.65);
     --accent: #7dd3fc;
     --accent-sub: #a78bfa;
-    --hover: rgba(255, 255, 255, 0.075);
+    --hover: rgba(255,255,255,0.075);
 }
 * {
     margin: 0;
@@ -80,8 +80,8 @@ h1 {
 }
 .glass-card {
     background: var(--glass);
-    backdrop-filter: blur(var(--glass-blur)) saturate(165%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(165%);
     border: 1px solid var(--glass-border);
     border-radius: 22px;
     box-shadow: 0 12px 45px rgba(0,0,0,0.25);
@@ -137,9 +137,10 @@ tr:hover {
     padding: 8px 14px;
     border-radius: 12px;
     cursor: pointer;
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     transition: 0.2s;
-    margin-bottom:12px;
+    margin-top:12px;
 }
 .btn:hover {
     background: rgba(255,255,255,0.14);
@@ -176,27 +177,30 @@ tr:hover {
     <noscript>
         <section class="glass-card">
             <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
-            <div id="privacyBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
-            <div id="uaBox">❌ JavaScript 已被禁用</div>
+            <div>
+                ❌ JavaScript 已被禁用，JS检测不可用<br>
+                <a class="ip-link" target="_blank" href="https://httpbin.org/headers">👉 点击这里，手动查看服务器收到的UA头</a>
+            </div>
         </section>
         <section class="glass-card">
             <h2>🖥️ WebGPU 适配器信息</h2>
-            <div id="webgpuBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>🎨 WebGL2 渲染信息</h2>
-            <div id="webglBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>🧾 基础环境信息</h2>
-            <div id="baseBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>🌐 网络信息（IPv4 / IPv6）</h2>
-            <div id="netBox">
+            <div>
                 ❌ JavaScript 已被禁用，无法自动获取IP<br>
                 <a class="ip-link" target="_blank" href="https://ipv4.icanhazip.com/">👉 查看 IPv4</a>
                 <a class="ip-link" target="_blank" href="https://ipv6.icanhazip.com/">👉 查看 IPv6</a>
@@ -204,60 +208,52 @@ tr:hover {
         </section>
         <section class="glass-card">
             <h2>🖥️ 屏幕信息</h2>
-            <div id="screenBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>🔋 电池信息</h2>
-            <div id="batteryBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
             <h2>🔊 音视频设备</h2>
-            <div id="mediaBox">❌ JavaScript 已被禁用</div>
+            <div>❌ JavaScript 已被禁用</div>
         </section>
     </noscript>
 
-    <div id="jsContent">
+    <div id="jsContent" style="display:none;">
         <section class="glass-card">
             <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
             <div id="privacyBox"></div>
             <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
         </section>
-
         <section class="glass-card">
             <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
             <div id="uaBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🖥️ WebGPU 适配器信息</h2>
             <div id="webgpuBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🎨 WebGL2 渲染信息</h2>
             <div id="webglBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🧾 基础环境信息</h2>
             <div id="baseBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🌐 网络信息（IPv4 / IPv6）</h2>
             <div id="netBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🖥️ 屏幕信息</h2>
             <div id="screenBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🔋 电池信息</h2>
             <div id="batteryBox"></div>
         </section>
-
         <section class="glass-card">
             <h2>🔊 音视频设备</h2>
             <button class="btn" onclick="getMediaDevice()">点击授权，读取音视频设备列表</button>
@@ -269,13 +265,105 @@ tr:hover {
         源码位置：<a target="_blank" rel="noopener noreferrer" href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html">https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html</a>
     </div>
 </div>
-
 <script>
-const parser = new UAParser();
+const UAParser = (function(){
+    var r = function(e){
+        this.ua = e || "", this._cache = {};
+    };
+    r.VERSION = "2.0.2";
+    var p = r.prototype;
+    p.setUA = function(e){
+        return this.ua = e || "", this._cache = {}, this;
+    };
+    p.getUA = function(){return this.ua;};
+    p.getResult = function(){
+        return this._cache.result || (this._cache.result = {
+            ua:this.ua,
+            browser:this.getBrowser(),
+            engine:this.getEngine(),
+            os:this.getOS(),
+            device:this.getDevice(),
+            cpu:this.getCPU()
+        }), this._cache.result;
+    };
+    var browserRules = {
+        "Chrome":/(?:Chrome|CriOS)\/(\d+(?:\.\d+)*)/,
+        "Edge":/Edge\/(\d+(?:\.\d+)*)|Edg\/(\d+(?:\.\d+)*)/,
+        "Firefox":/(?:Firefox|FxiOS)\/(\d+(?:\.\d+)*)/,
+        "Safari":/Version\/(\d+(?:\.\d+)*).*Safari/,
+        "Opera":/Opera.*Version\/(\d+(?:\.\d+)*)|OPR\/(\d+(?:\.\d+)*)/
+    };
+    p.getBrowser = function(){
+        if(this._cache.browser) return this._cache.browser;
+        let out = {name:"",version:"",major:""};
+        for(let k in browserRules){
+            let m = this.ua.match(browserRules[k]);
+            if(m){
+                out.name = k;
+                out.version = m[1]||m[2]||"";
+                out.major = out.version.split(".")[0];
+                break;
+            }
+        }
+        this._cache.browser = out;
+        return out;
+    };
+    p.getEngine = function(){
+        if(this._cache.engine) return this._cache.engine;
+        let out = {name:"",version:""};
+        if(/AppleWebKit/.test(this.ua)) out.name="WebKit";
+        else if(/Gecko\//.test(this.ua)) out.name="Gecko";
+        this._cache.engine = out;
+        return out;
+    };
+    p.getOS = function(){
+        if(this._cache.os) return this._cache.os;
+        let out = {name:"",version:""};
+        if(/Windows NT (\d+\.\d+)/.test(this.ua)){
+            out.name="Windows";
+            out.version = RegExp.$1;
+        }else if(/Mac OS X (\d+(?:[_\\.])*)/.test(this.ua)){
+            out.name="MacOS";
+            out.version = RegExp.$1;
+        }else if(/Android\s*(\d+(?:\.\d+)*)/.test(this.ua)){
+            out.name="Android";
+            out.version = RegExp.$1;
+        }else if(/OS (\d+(?:[_\\.])*)/.test(this.ua) && /iPhone|iPad|iPod/.test(this.ua)){
+            out.name="iOS";
+            out.version = RegExp.$1;
+        }else if(/Linux/.test(this.ua)) out.name="Linux";
+        this._cache.os = out;
+        return out;
+    };
+    p.getCPU = function(){
+        if(this._cache.cpu) return this._cache.cpu;
+        let out = {architecture:""};
+        let m = this.ua.match(/\b(x86|x64|arm|aarch64|ARM64)\b/i);
+        if(m) out.architecture = m[0].toLowerCase();
+        this._cache.cpu = out;
+        return out;
+    };
+    p.getDevice = function(){
+        if(this._cache.device) return this._cache.device;
+        let out = {type:"",vendor:"",model:""};
+        this._cache.device = out;
+        return out;
+    };
+    return r;
+})();
+
+let parser, uaResult = {
+    browser: {name:"未知",version:"",major:""},
+    os:{name:"未知",version:""},
+    cpu:{architecture:"未知"},
+    device:{type:"",vendor:"",model:""}
+};
 const rawUA = navigator.userAgent;
-const uaResult = parser.setUA(rawUA).getResult();
 let isTimeout = false;
 const MAX_TIME = 20000;
+
+let mediaTimeoutTriggered = false;
+const MEDIA_MAX_TIME = 20000;
 
 function makeTable(rows) {
     let html = '<table>';
@@ -286,6 +374,22 @@ function makeTable(rows) {
     return html;
 }
 
+function runAllDetect() {
+try {
+    parser = new UAParser(rawUA);
+    uaResult = parser.getResult();
+} catch(e) {
+    console.error("UAParser error",e);
+    uaResult = {
+        browser: {name:"未知",version:"",major:""},
+        os:{name:"未知",version:""},
+        cpu:{architecture:"未知"},
+        device:{type:"",vendor:"",model:""}
+    };
+}
+
+document.getElementById('jsContent').style.display = "block";
+
 const boxes = [
     document.getElementById('privacyBox'),
     document.getElementById('uaBox'),
@@ -294,8 +398,8 @@ const boxes = [
     document.getElementById('baseBox'),
     document.getElementById('netBox'),
     document.getElementById('screenBox'),
-    document.getElementById('batteryBox'),
-    document.getElementById('mediaBox')
+    document.getElementById('batteryBox')
+    // mediaBox 移除，初始化不写检测中
 ];
 boxes[0].innerHTML = `<p class="status-warn">检测中...</p>`;
 boxes[1].innerHTML = `<p class="status-warn">解析UA中...</p>`;
@@ -314,51 +418,81 @@ function setTimeoutAll() {
     }, MAX_TIME);
 }
 setTimeoutAll();
+}
 
-// 隐私、广告拦截
-(function(){
+function startAdDetect(){
     const box = document.getElementById("privacyBox");
     const bait = document.getElementById("ad-bait");
-    let adBlockDetected = (getComputedStyle(bait).display === 'none' || getComputedStyle(bait).visibility === 'hidden');
-    setTimeout(()=>{
-        if(isTimeout) return;
-        const dnt = navigator.doNotTrack;
-        let dntText = "未开启";
-        if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
-        const rows = [
-            ["JavaScript状态", "✅ 已启用"],
-            ["Do Not Track(DNT)", dntText],
-            ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
-        ];
-        box.innerHTML = makeTable(rows);
-    },300);
-})();
+    let adBlockDetected = false;
+    const check = (cnt = 0) => {
+        const st = getComputedStyle(bait);
+        if(st.display === "none" || st.visibility === "hidden" || st.opacity === "0"){
+            adBlockDetected = true;
+        }
+        if(cnt >= 5){
+            if(isTimeout) return;
+            const dnt = navigator.doNotTrack;
+            let dntText = "未开启";
+            if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
+            const rows = [
+                ["JavaScript状态", "✅ 已启用"],
+                ["Do Not Track(DNT)", dntText],
+                ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
+            ];
+            box.innerHTML = makeTable(rows);
+            return;
+        }
+        setTimeout(()=>check(cnt+1), 80);
+    }
+    check();
+}
 
-// UA + Client Hints + UA篡改检测
-(async function(){
+let serverUA = "⏳ 自动请求中...";
+let uaHttpCompareResult = "🔘 等待服务器返回";
+
+async function autoFetchServerUA(){
+    try {
+        const ctl = new AbortController();
+        const t = setTimeout(()=>ctl.abort(), 4000);
+        const res = await fetch("https://httpbin.org/headers", {signal:ctl.signal});
+        clearTimeout(t);
+        const json = await res.json();
+        serverUA = json.headers["User-Agent"] ?? "无";
+        if(serverUA === rawUA){
+            uaHttpCompareResult = "✅ HTTP头UA 和 JS UA一致";
+        }else{
+            uaHttpCompareResult = "⚠️ HTTP头UA 和 JS UA不一致 → 存在篡改（仅参考）";
+        }
+    }catch(err){
+        serverUA = "获取失败（超时/被拦截）";
+        uaHttpCompareResult = "❌ 拉取服务器UA失败";
+    }
+}
+
+async function startUADetect(){
     const box = document.getElementById("uaBox");
     if(isTimeout) return;
+
+    await autoFetchServerUA();
+
     let browserName = uaResult.browser.name || "未知";
     if(rawUA.includes("QQEX")) browserName = "QQEX（QQ内嵌网页内核）";
     let arch = uaResult.cpu.architecture || "未知";
     let bitness = "不支持（非Chromium）";
     let platformRaw = uaResult.os.name || "未知";
     let platformHint = "-";
-    let uaTamperCheck = "✅ 未发现明显不一致（仅供参考）";
-
+    let uaTamperCheck = "✅ 未发现平台不一致（仅供参考）";
     try{
         if(navigator.userAgentData?.getHighEntropyValues){
             const hint = await navigator.userAgentData.getHighEntropyValues(["architecture","bitness","platform","platformVersion"]);
             bitness = hint.bitness;
             platformHint = hint.platform;
-            // 粗略比对平台
             const uaIsWin = /Windows NT/i.test(rawUA);
             const hintIsWin = /Windows/i.test(platformHint);
             const uaIsMac = /Mac OS X/i.test(rawUA);
             const hintIsMac = /macOS/i.test(platformHint);
             const uaIsAndroid = /Android/i.test(rawUA);
             const hintIsAndroid = /Android/i.test(platformHint);
-
             if( (uaIsWin && !hintIsWin) || (uaIsMac && !hintIsMac) || (uaIsAndroid && !hintIsAndroid) ){
                 uaTamperCheck = "⚠️ UA与ClientHint平台不一致，疑似篡改（仅供参考）";
             }
@@ -366,21 +500,24 @@ setTimeoutAll();
     }catch(e){
         uaTamperCheck = "⚠️ 无法获取ClientHint，无法校验UA一致性（仅供参考）";
     }
+    function renderUATable(){
+        const rows = [
+            ["JS读取完整UA字符串", rawUA],
+            ["服务器收到的UA", serverUA],
+            ["HTTP头UA vs JS-UA", uaHttpCompareResult],
+            ["识别浏览器", browserName],
+            ["识别系统(UA)", platformRaw],
+            ["系统(ClientHint)", platformHint],
+            ["CPU架构", arch],
+            ["系统位数", bitness],
+            ["ClientHint平台校验", uaTamperCheck]
+        ];
+        box.innerHTML = makeTable(rows);
+    }
+    renderUATable();
+}
 
-    const rows = [
-        ["完整UA字符串", rawUA],
-        ["识别浏览器", browserName],
-        ["识别系统(UA)", platformRaw],
-        ["系统(ClientHint)", platformHint],
-        ["CPU架构", arch],
-        ["系统位数", bitness],
-        ["是否篡改UA（仅供参考）", uaTamperCheck]
-    ];
-    box.innerHTML = makeTable(rows);
-})();
-
-// WebGPU
-(async function(){
+async function startWebGPU(){
     const box = document.getElementById("webgpuBox");
     if(isTimeout) return;
     if(!navigator.gpu){
@@ -393,7 +530,19 @@ setTimeoutAll();
             box.innerHTML = '<p class="status-warn">✅ 支持WebGPU，但无法获取适配器信息（浏览器限制）</p>';
             return;
         }
-        const info = await adapter.requestAdapterInfo();
+        let info;
+        if (adapter.info) {
+            info = adapter.info;
+        } else if (typeof adapter.requestAdapterInfo === "function") {
+            info = await adapter.requestAdapterInfo();
+        } else {
+            info = {
+                vendor: "浏览器版本处于WebGPU API过渡期",
+                architecture: "",
+                device: "当前版本无法读取GPU适配器信息",
+                description: "API接口不匹配"
+            };
+        }
         const rows = [
             ["GPU厂商", info.vendor || "未知"],
             ["GPU架构", info.architecture || "未知"],
@@ -404,10 +553,9 @@ setTimeoutAll();
     }catch(e){
         box.innerHTML = `<p class="status-err">WebGPU检测失败：${e.message}</p>`;
     }
-})();
+}
 
-// WebGL2
-(function(){
+function startWebGL(){
     const box = document.getElementById("webglBox");
     if(isTimeout) return;
     const canvas = document.createElement("canvas");
@@ -424,10 +572,9 @@ setTimeoutAll();
         ["WebGL渲染器", renderer]
     ];
     box.innerHTML = makeTable(rows);
-})();
+}
 
-// 基础环境
-(function(){
+function startBaseInfo(){
     const box = document.getElementById("baseBox");
     if(isTimeout) return;
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -439,9 +586,8 @@ setTimeoutAll();
         ["语言列表", langs]
     ];
     box.innerHTML = makeTable(rows);
-})();
+}
 
-// IP网络
 async function fetchIp(url, timeout=3000){
     try{
         const ctl = new AbortController();
@@ -452,7 +598,8 @@ async function fetchIp(url, timeout=3000){
     }catch(e){}
     return "获取失败";
 }
-(async function(){
+
+async function startNetInfo(){
     const box = document.getElementById("netBox");
     if(isTimeout) return;
     const ipv4 = await fetchIp("https://ipv4.icanhazip.com");
@@ -468,27 +615,20 @@ async function fetchIp(url, timeout=3000){
         ["预估RTT(ms)", rtt]
     ];
     box.innerHTML = makeTable(rows);
-})();
+}
 
-// 屏幕
-(function(){
+async function startScreenInfo(){
     const box = document.getElementById("screenBox");
     if(isTimeout) return;
     let refresh = "不支持";
     let screenCount = "不支持";
-    if(window.getScreenDetails){
-        window.getScreenDetails().then(s=>{
+    try {
+        if(window.getScreenDetails){
+            const s = await window.getScreenDetails();
             refresh = s.currentScreen.refreshRate.toFixed(0)+" Hz";
             screenCount = s.screens.length + " 块屏幕";
-            const rows = [
-                ["屏幕分辨率", screen.width + " × " + screen.height],
-                ["可用区域", screen.availWidth + " × " + screen.availHeight],
-                ["刷新率", refresh],
-                ["屏幕数量", screenCount],
-                ["色彩深度", screen.colorDepth + " bit"]
-            ];
-            box.innerHTML = makeTable(rows);
-        }).catch(()=>{});
+        }
+    }catch(err){
     }
     const rows = [
         ["屏幕分辨率", screen.width + " × " + screen.height],
@@ -498,10 +638,9 @@ async function fetchIp(url, timeout=3000){
         ["色彩深度", screen.colorDepth + " bit"]
     ];
     box.innerHTML = makeTable(rows);
-})();
+}
 
-// 电池
-(async function(){
+async function startBattery(){
     const box = document.getElementById("batteryBox");
     if(isTimeout) return;
     if(!navigator.getBattery){
@@ -518,11 +657,18 @@ async function fetchIp(url, timeout=3000){
     }catch(e){
         box.innerHTML = `<p class="status-err">电池检测失败：${e.message}</p>`;
     }
-})();
+}
 
-// ========== 音视频（独立超时，不再受全局isTimeout影响） ==========
 window.getMediaDevice = async function() {
     const box = document.getElementById("mediaBox");
+    let mediaTimer = null;
+    if(!mediaTimeoutTriggered){
+        mediaTimeoutTriggered = true;
+        mediaTimer = setTimeout(()=>{
+            box.innerHTML = `<p class="status-err">⏱️音视频检测超时（点击后超过20秒）</p>`;
+        }, MEDIA_MAX_TIME);
+    }
+
     box.innerHTML = `<p class="status-warn">正在请求媒体权限...</p>`;
     const mediaTimeout = new Promise((_, reject) => setTimeout(()=>reject(new Error("media_timeout")), 8000));
     try {
@@ -532,6 +678,7 @@ window.getMediaDevice = async function() {
         ]);
         stream.getTracks().forEach(t=>t.stop());
         const devs = await navigator.mediaDevices.enumerateDevices();
+        clearTimeout(mediaTimer);
         if(devs.length === 0){
             box.innerHTML = `<p class="status-warn">权限已授予，但浏览器拒绝返回设备标签</p>`;
             return;
@@ -549,6 +696,7 @@ window.getMediaDevice = async function() {
         });
         box.innerHTML = makeTable(rows);
     }catch(e){
+        clearTimeout(mediaTimer);
         if(e.message === "media_timeout"){
             box.innerHTML = `<p class="status-err">⏱️ 媒体检测超时（8秒）</p>`;
         }else if(e.name === "NotAllowedError"){
@@ -558,6 +706,16 @@ window.getMediaDevice = async function() {
         }
     }
 }
+
+runAllDetect();
+startAdDetect();
+startUADetect();
+startWebGPU();
+startWebGL();
+startBaseInfo();
+startNetInfo();
+startScreenInfo();
+startBattery();
 </script>
 </body>
 </html>
