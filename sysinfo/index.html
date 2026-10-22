@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>设备信息检测器</title>
-<script src="https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.2/dist/ua-parser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.1/dist/ua-parser.min.js"></script>
 <style>
 :root {
     --bg-primary: #070a13;
@@ -14,7 +14,7 @@
     --glass-border: rgba(255, 255, 255, 0.12);
     --glass-blur: 20px;
     --text-primary: rgba(255, 255, 255, 0.92);
-    --text-secondary: rgba(200, 210, 235, 0.65);
+    --text-secondary: rgba(200, 210, 230, 0.65);
     --accent: #7dd3fc;
     --accent-sub: #a78bfa;
     --hover: rgba(255, 255, 255, 0.075);
@@ -84,14 +84,14 @@ h1 {
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
     border: 1px solid var(--glass-border);
     border-radius: 22px;
-    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 45px rgba(0,0,0,0.25);
     padding: 24px;
     margin-bottom: 22px;
     transition: transform 0.25s ease, border-color 0.25s ease;
 }
 .glass-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255,255,255,0.18);
 }
 .glass-card h2 {
     font-size: 19px;
@@ -183,19 +183,19 @@ tr:hover {
             <div id="uaBox">❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
-            <h2>WebGPU 适配器信息</h2>
+            <h2>🖥️ WebGPU 适配器信息</h2>
             <div id="webgpuBox">❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
-            <h2>WebGL2 渲染信息（区分软件层/硬件）</h2>
+            <h2>🎨 WebGL2 渲染信息</h2>
             <div id="webglBox">❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
-            <h2>基础环境信息</h2>
+            <h2>🧾 基础环境信息</h2>
             <div id="baseBox">❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
-            <h2>🌐 网络信息（IPv4 / IPv6分离）</h2>
+            <h2>🌐 网络信息（IPv4 / IPv6）</h2>
             <div id="netBox">
                 ❌ JavaScript 已被禁用，无法自动获取IP<br>
                 <a class="ip-link" target="_blank" href="https://ipv4.icanhazip.com/">👉 查看 IPv4</a>
@@ -203,7 +203,7 @@ tr:hover {
             </div>
         </section>
         <section class="glass-card">
-            <h2>🖥️ 屏幕显示信息</h2>
+            <h2>🖥️ 屏幕信息</h2>
             <div id="screenBox">❌ JavaScript 已被禁用</div>
         </section>
         <section class="glass-card">
@@ -229,27 +229,27 @@ tr:hover {
         </section>
 
         <section class="glass-card">
-            <h2>WebGPU 适配器信息</h2>
+            <h2>🖥️ WebGPU 适配器信息</h2>
             <div id="webgpuBox"></div>
         </section>
 
         <section class="glass-card">
-            <h2>WebGL2 渲染信息（区分软件层/硬件）</h2>
+            <h2>🎨 WebGL2 渲染信息</h2>
             <div id="webglBox"></div>
         </section>
 
         <section class="glass-card">
-            <h2>基础环境信息</h2>
+            <h2>🧾 基础环境信息</h2>
             <div id="baseBox"></div>
         </section>
 
         <section class="glass-card">
-            <h2>🌐 网络信息（IPv4 / IPv6分离）</h2>
+            <h2>🌐 网络信息（IPv4 / IPv6）</h2>
             <div id="netBox"></div>
         </section>
 
         <section class="glass-card">
-            <h2>🖥️ 屏幕显示信息</h2>
+            <h2>🖥️ 屏幕信息</h2>
             <div id="screenBox"></div>
         </section>
 
@@ -272,9 +272,10 @@ tr:hover {
 
 <script>
 const parser = new UAParser();
-const uaResult = parser.getResult();
+const rawUA = navigator.userAgent;
+const uaResult = parser.setUA(rawUA).getResult();
 let isTimeout = false;
-const MAX_TIME = 20000; // 20秒全局超时
+const MAX_TIME = 20000;
 
 function makeTable(rows) {
     let html = '<table>';
@@ -285,7 +286,6 @@ function makeTable(rows) {
     return html;
 }
 
-// JS启动填充初始文字
 const boxes = [
     document.getElementById('privacyBox'),
     document.getElementById('uaBox'),
@@ -298,18 +298,16 @@ const boxes = [
     document.getElementById('mediaBox')
 ];
 boxes[0].innerHTML = `<p class="status-warn">检测中...</p>`;
-boxes[1].innerHTML = `<p class="status-warn">解析中...</p>`;
-for(let i=2;i<boxes.length-1;i++){
+boxes[1].innerHTML = `<p class="status-warn">解析UA中...</p>`;
+for(let i=2;i<boxes.length;i++){
     boxes[i].innerHTML = `<p class="status-warn">检测中...</p>`;
 }
-boxes[boxes.length-1].innerHTML = `等待授权...`;
 
-// 全局20s超时
 function setTimeoutAll() {
     setTimeout(() => {
         isTimeout = true;
         boxes.forEach(el => {
-            if(el.textContent.includes("检测中") || el.textContent.includes("解析中") || el.textContent.includes("等待授权")){
+            if(el.textContent.includes("检测中") || el.textContent.includes("解析UA中")){
                 el.innerHTML = `<p class="status-err">⏱️ 检测超时失败（超过20秒）</p>`;
             }
         })
@@ -317,309 +315,247 @@ function setTimeoutAll() {
 }
 setTimeoutAll();
 
-// ========== 隐私、广告拦截检测 ==========
+// 隐私、广告拦截
 (function(){
     const box = document.getElementById("privacyBox");
     const bait = document.getElementById("ad-bait");
     let adBlockDetected = (getComputedStyle(bait).display === 'none' || getComputedStyle(bait).visibility === 'hidden');
-
     setTimeout(()=>{
         if(isTimeout) return;
         const dnt = navigator.doNotTrack;
         let dntText = "未开启";
         if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
-
         const rows = [
             ["JavaScript状态", "✅ 已启用"],
             ["Do Not Track(DNT)", dntText],
             ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
         ];
         box.innerHTML = makeTable(rows);
-    }, 300);
+    },300);
 })();
 
-// ========== UA + Client Hints ==========
+// UA + Client Hints + UA篡改检测
 (async function(){
     const box = document.getElementById("uaBox");
     if(isTimeout) return;
-    const os = uaResult.os;
-    const browser = uaResult.browser;
-    const cpu = uaResult.cpu;
-
-    let arch = cpu.architecture || "未知";
+    let browserName = uaResult.browser.name || "未知";
+    if(rawUA.includes("QQEX")) browserName = "QQEX（QQ内嵌网页内核）";
+    let arch = uaResult.cpu.architecture || "未知";
     let bitness = "不支持（非Chromium）";
-    let platformVerRaw = "-";
-    let osNameHint = "-";
+    let platformRaw = uaResult.os.name || "未知";
+    let platformHint = "-";
+    let uaTamperCheck = "✅ 未发现明显不一致（仅供参考）";
 
-    if(navigator.userAgentData?.getHighEntropyValues){
-        try{
-            const hint = await navigator.userAgentData.getHighEntropyValues([
-                "architecture",
-                "bitness",
-                "platformVersion"
-            ]);
-            arch = hint.architecture || arch;
-            bitness = hint.bitness + " bit";
-            platformVerRaw = hint.platformVersion;
-            const major = parseInt(platformVerRaw.split('.')[0]);
-            if(navigator.userAgentData.platform === "Windows"){
-                if(major >= 13) osNameHint = "Windows 11";
-                else if(major > 0) osNameHint = "Windows 10";
-                else osNameHint = "Windows 7/8";
-            }else{
-                osNameHint = navigator.userAgentData.platform;
+    try{
+        if(navigator.userAgentData?.getHighEntropyValues){
+            const hint = await navigator.userAgentData.getHighEntropyValues(["architecture","bitness","platform","platformVersion"]);
+            bitness = hint.bitness;
+            platformHint = hint.platform;
+            // 粗略比对平台
+            const uaIsWin = /Windows NT/i.test(rawUA);
+            const hintIsWin = /Windows/i.test(platformHint);
+            const uaIsMac = /Mac OS X/i.test(rawUA);
+            const hintIsMac = /macOS/i.test(platformHint);
+            const uaIsAndroid = /Android/i.test(rawUA);
+            const hintIsAndroid = /Android/i.test(platformHint);
+
+            if( (uaIsWin && !hintIsWin) || (uaIsMac && !hintIsMac) || (uaIsAndroid && !hintIsAndroid) ){
+                uaTamperCheck = "⚠️ UA与ClientHint平台不一致，疑似篡改（仅供参考）";
             }
-        }catch(e){}
+        }
+    }catch(e){
+        uaTamperCheck = "⚠️ 无法获取ClientHint，无法校验UA一致性（仅供参考）";
     }
 
     const rows = [
-        ["浏览器名称", browser.name || "未知"],
-        ["浏览器版本", browser.version || "未知"],
-        ["系统名称(UA)", os.name || "未知"],
-        ["系统版本(UA)", os.version || "未知"],
-        ["系统识别结果(ClientHint)", osNameHint],
-        ["原始platformVersion", platformVerRaw],
+        ["完整UA字符串", rawUA],
+        ["识别浏览器", browserName],
+        ["识别系统(UA)", platformRaw],
+        ["系统(ClientHint)", platformHint],
         ["CPU架构", arch],
-        ["CPU位宽", bitness]
+        ["系统位数", bitness],
+        ["是否篡改UA（仅供参考）", uaTamperCheck]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== WebGPU ==========
-(async function() {
+// WebGPU
+(async function(){
     const box = document.getElementById("webgpuBox");
     if(isTimeout) return;
-    if (!navigator.gpu) {
-        box.innerHTML = '<p class="status-err">❌ 当前浏览器不支持 WebGPU</p>';
+    if(!navigator.gpu){
+        box.innerHTML = '<p class="status-warn">❌ 当前浏览器不支持WebGPU</p>';
         return;
     }
-    try {
+    try{
         const adapter = await navigator.gpu.requestAdapter();
-        if(isTimeout) return;
-        if (!adapter) {
-            box.innerHTML = '<p class="status-warn">✅ 支持WebGPU，但隐私策略限制，无法获取适配器信息</p>';
+        if(!adapter){
+            box.innerHTML = '<p class="status-warn">✅ 支持WebGPU，但无法获取适配器信息（浏览器限制）</p>';
             return;
         }
-        const info = adapter.info;
-        const limits = adapter.limits;
-        const features = Array.from(adapter.features).join('、');
-
+        const info = await adapter.requestAdapterInfo();
         const rows = [
-            ["显卡描述", info.description || "无"],
-            ["硬件厂商", info.vendor || "浏览器屏蔽"],
-            ["架构", info.architecture || "浏览器屏蔽"],
-            ["设备ID", info.device || "浏览器屏蔽"],
-            ["驱动版本", info.driver ?? "浏览器屏蔽"],
-            ["底层后端(D3D12/Vulkan)", info.backend ?? "浏览器屏蔽"],
-            ["是否软件回退适配器", info.isFallbackAdapter ? "是" : "否"],
-            ["支持特性列表", features || "无"],
-            ["最大纹理边长", limits.maxTextureDimension2D],
-            ["最大缓冲区大小", limits.maxBufferSize],
-            ["每个工作组最大X", limits.maxComputeWorkgroupSizeX],
-            ["每个工作组最大Y", limits.maxComputeWorkgroupSizeY],
-            ["每个工作组最大Z", limits.maxComputeWorkgroupSizeZ],
-            ["绑定组最大数量", limits.maxBindGroups]
+            ["GPU厂商", info.vendor || "未知"],
+            ["GPU架构", info.architecture || "未知"],
+            ["GPU型号", info.device || "未知"],
+            ["描述", info.description || "无"]
         ];
         box.innerHTML = makeTable(rows);
-    } catch (e) {
-        box.innerHTML = `<p class="status-err">WebGPU 异常：${e.message}</p>`;
+    }catch(e){
+        box.innerHTML = `<p class="status-err">WebGPU检测失败：${e.message}</p>`;
     }
 })();
 
-// ========== WebGL2 ==========
-(function() {
+// WebGL2
+(function(){
     const box = document.getElementById("webglBox");
     if(isTimeout) return;
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2");
-    if (!gl) {
-        box.innerHTML = '<p class="status-err">❌ 不支持 WebGL2</p>';
+    if(!gl){
+        box.innerHTML = '<p class="status-warn">❌ 不支持WebGL2</p>';
         return;
     }
-    const ext = gl.getExtension("WEBGL_debug_renderer_info");
-    let rawVendor = "扩展被禁用（隐私模式）";
-    let rawRenderer = "扩展被禁用（隐私模式）";
-    let softwareVendor = "-";
-    let hardwareVendor = "-";
-    if (ext) {
-        rawVendor = gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
-        rawRenderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
-        if(rawRenderer.startsWith("ANGLE (")){
-            softwareVendor = "ANGLE (Google)";
-            const match = rawRenderer.match(/ANGLE \(([A-Za-z0-9]+)/);
-            if(match) hardwareVendor = match[1];
-        }else{
-            softwareVendor = "原生GL";
-            hardwareVendor = rawVendor;
-        }
-    }
-
-    const extensions = gl.getSupportedExtensions().join('、');
+    const debug = gl.getExtension("WEBGL_debug_renderer_info");
+    const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
     const rows = [
-        ["软件渲染层", softwareVendor],
-        ["硬件显卡信息", hardwareVendor],
-        ["原始Vendor字符串", rawVendor],
-        ["原始Renderer字符串", rawRenderer],
-        ["WebGL版本", gl.getParameter(gl.VERSION)],
-        ["GLSL版本", gl.getParameter(gl.SHADING_LANGUAGE_VERSION)],
-        ["支持扩展列表", extensions]
+        ["WebGL厂商", vendor],
+        ["WebGL渲染器", renderer]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 基础环境 ==========
+// 基础环境
 (function(){
     const box = document.getElementById("baseBox");
     if(isTimeout) return;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    let backingStore = ctx ? (ctx.webkitBackingStorePixelRatio ?? ctx.backingStorePixelRatio ?? "1") : "无";
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const langs = navigator.languages.join("、");
-
     const rows = [
-        ["User-Agent", navigator.userAgent],
+        ["User-Agent", rawUA],
         ["设备像素比", window.devicePixelRatio],
-        ["画布底层像素比", backingStore],
-        ["CPU逻辑核心数", navigator.hardwareConcurrency],
-        ["浏览器语言列表", langs],
-        ["系统时区", tz]
+        ["时区", tz],
+        ["语言列表", langs]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 网络IP（ipv4/ipv6独立） ==========
-async function fetchIp(url, timeout=3000) {
-    try {
-        const controller = new AbortController();
-        const timer = setTimeout(()=>controller.abort(),timeout);
-        const res = await fetch(url, {signal: controller.signal});
-        clearTimeout(timer);
+// IP网络
+async function fetchIp(url, timeout=3000){
+    try{
+        const ctl = new AbortController();
+        const t = setTimeout(()=>ctl.abort(), timeout);
+        const res = await fetch(url, {signal:ctl.signal});
+        clearTimeout(t);
         if(res.ok) return (await res.text()).trim();
     }catch(e){}
-    return "不可用/无地址";
+    return "获取失败";
 }
 (async function(){
     const box = document.getElementById("netBox");
     if(isTimeout) return;
     const ipv4 = await fetchIp("https://ipv4.icanhazip.com");
     const ipv6 = await fetchIp("https://ipv6.icanhazip.com");
-
-    let localIps = "浏览器隐私策略屏蔽内网IP（新版Chrome/Edge默认）";
-    let netType = "不支持";
-    let downlink = "-";
-    let rtt = "-";
-
-    if(navigator.connection) {
-        const conn = navigator.connection;
-        netType = conn.effectiveType ?? conn.type ?? "未知";
-        downlink = conn.downlink + " Mbps";
-        rtt = conn.rtt + " ms";
-    }
-
-    try {
-        const pc = new RTCPeerConnection({iceServers:[]});
-        pc.createDataChannel("");
-        pc.createOffer().then(offer=>pc.setLocalDescription(offer));
-        pc.onicecandidate = e=>{
-            if(isTimeout) return;
-            if(!e.candidate) return;
-            const ipMatch = e.candidate.candidate.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
-            if(ipMatch) localIps = ipMatch[0];
-        };
-    }catch(e){}
-
+    let localIp = "浏览器隐私策略禁止获取内网IP";
+    let netType = navigator.connection?.effectiveType ?? "不支持";
+    let rtt = navigator.connection?.rtt ?? "-";
     const rows = [
-        ["公网 IPv4", ipv4],
-        ["公网 IPv6", ipv6],
-        ["内网IP(WebRTC)", localIps],
+        ["公网IPv4", ipv4],
+        ["公网IPv6", ipv6],
+        ["内网IP(WebRTC)", localIp],
         ["网络类型", netType],
-        ["预估下行带宽", downlink],
-        ["网络RTT", rtt]
+        ["预估RTT(ms)", rtt]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 屏幕 ==========
-(async function(){
+// 屏幕
+(function(){
     const box = document.getElementById("screenBox");
     if(isTimeout) return;
-    let refreshRate = "不支持";
-    let screenCount = "不支持getScreenDetails";
-    if(window.getScreenDetails) {
-        try {
-            const details = await window.getScreenDetails();
-            refreshRate = details.currentScreen.refreshRate + " Hz";
-            screenCount = details.screens.length + " 块显示器";
-        }catch(e){}
+    let refresh = "不支持";
+    let screenCount = "不支持";
+    if(window.getScreenDetails){
+        window.getScreenDetails().then(s=>{
+            refresh = s.currentScreen.refreshRate.toFixed(0)+" Hz";
+            screenCount = s.screens.length + " 块屏幕";
+            const rows = [
+                ["屏幕分辨率", screen.width + " × " + screen.height],
+                ["可用区域", screen.availWidth + " × " + screen.availHeight],
+                ["刷新率", refresh],
+                ["屏幕数量", screenCount],
+                ["色彩深度", screen.colorDepth + " bit"]
+            ];
+            box.innerHTML = makeTable(rows);
+        }).catch(()=>{});
     }
     const rows = [
         ["屏幕分辨率", screen.width + " × " + screen.height],
-        ["可用分辨率", screen.availWidth + " × " + screen.availHeight],
-        ["颜色深度", screen.colorDepth + " bit"],
-        ["刷新率", refreshRate],
-        ["显示器数量", screenCount]
+        ["可用区域", screen.availWidth + " × " + screen.availHeight],
+        ["刷新率", refresh],
+        ["屏幕数量", screenCount],
+        ["色彩深度", screen.colorDepth + " bit"]
     ];
     box.innerHTML = makeTable(rows);
 })();
 
-// ========== 电池 ==========
+// 电池
 (async function(){
     const box = document.getElementById("batteryBox");
     if(isTimeout) return;
-    if(!navigator.getBattery) {
-        box.innerHTML = '<p class="status-warn">当前浏览器不支持Battery API（新版桌面端已移除）</p>';
+    if(!navigator.getBattery){
+        box.innerHTML = '<p class="status-warn">❌ 当前浏览器不支持Battery API</p>';
         return;
     }
-    try {
+    try{
         const bat = await navigator.getBattery();
-        function formatTime(s) {
-            if(!isFinite(s) || s === Infinity || s <= 0) return "--（无法预估）";
-            return s + " 秒";
-        }
         const rows = [
-            ["电量", (bat.level * 100).toFixed(0) + "%"],
-            ["是否充电", bat.charging ? "是" : "否"],
-            ["充满剩余时间", formatTime(bat.chargingTime)],
-            ["耗尽剩余时间", formatTime(bat.dischargingTime)]
+            ["电量", (bat.level*100).toFixed(0)+"%"],
+            ["是否充电", bat.charging ? "✅ 充电中" : "❌ 未充电"]
         ];
         box.innerHTML = makeTable(rows);
-    }catch(e) {
-        box.innerHTML = `<p class="status-err">电池读取异常：${e.message}</p>`;
+    }catch(e){
+        box.innerHTML = `<p class="status-err">电池检测失败：${e.message}</p>`;
     }
 })();
 
-// ========== 音视频设备按钮 ==========
+// ========== 音视频（独立超时，不再受全局isTimeout影响） ==========
 window.getMediaDevice = async function() {
     const box = document.getElementById("mediaBox");
-    if(isTimeout){
-        box.innerHTML = `<p class="status-err">⏱️ 检测超时失败</p>`;
-        return;
-    }
+    box.innerHTML = `<p class="status-warn">正在请求媒体权限...</p>`;
+    const mediaTimeout = new Promise((_, reject) => setTimeout(()=>reject(new Error("media_timeout")), 8000));
     try {
-        await navigator.mediaDevices.getUserMedia({audio:true, video:true});
-        const tracks = await navigator.mediaDevices.getUserMedia({audio:true, video:true});
-        tracks.getTracks().forEach(t=>t.stop());
-
+        const stream = await Promise.race([
+            navigator.mediaDevices.getUserMedia({audio:true, video:true}),
+            mediaTimeout
+        ]);
+        stream.getTracks().forEach(t=>t.stop());
         const devs = await navigator.mediaDevices.enumerateDevices();
-        let rows = [];
-        if(devs.length === 0) {
-            box.innerHTML = `<p class="status-warn">权限已授予，但浏览器拒绝返回设备名称</p>`;
+        if(devs.length === 0){
+            box.innerHTML = `<p class="status-warn">权限已授予，但浏览器拒绝返回设备标签</p>`;
             return;
         }
+        const kindMap = {
+            "audioinput": "🎤 麦克风",
+            "audiooutput": "🔊 扬声器",
+            "videoinput": "📷 摄像头"
+        };
+        const rows = [];
         devs.forEach(d=>{
-            const kindMap = {
-                "audioinput": "🎤 麦克风",
-                "audiooutput": "🔊 扬声器",
-                "videoinput": "📷 摄像头"
-            };
-            const typeName = kindMap[d.kind] || d.kind;
+            const name = kindMap[d.kind] || d.kind;
             const label = d.label.trim() || "无标签（浏览器限制）";
-            rows.push([typeName, label])
-        })
+            rows.push([name, label]);
+        });
         box.innerHTML = makeTable(rows);
-    }catch(e) {
-        box.innerHTML = `<p class="status-err">获取失败：${e.message}</p>`;
+    }catch(e){
+        if(e.message === "media_timeout"){
+            box.innerHTML = `<p class="status-err">⏱️ 媒体检测超时（8秒）</p>`;
+        }else if(e.name === "NotAllowedError"){
+            box.innerHTML = `<p class="status-err">❌ 用户拒绝媒体授权</p>`;
+        }else{
+            box.innerHTML = `<p class="status-err">获取失败：${e.message}</p>`;
+        }
     }
 }
 </script>
