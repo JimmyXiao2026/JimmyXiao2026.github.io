@@ -1,236 +1,721 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>404 Not Found</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b7cf8'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230a0e1a'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='url(%23g)' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='url(%23g)'/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设备信息检测器</title>
+<link rel="icon" href="data:,">
 <style>
-  /* ============ Tokens 和主页完全一致 ============ */
-  :root {
-    --bg: #05060e;
-    --glass: rgba(255, 255, 255, 0.045);
-    --glass-strong: rgba(255, 255, 255, 0.08);
-    --stroke: rgba(255, 255, 255, 0.09);
-    --stroke-strong: rgba(255, 255, 255, 0.16);
-    --text: #e8ecf8;
-    --text-dim: #9aa3bd;
-    --text-faint: #6b7390;
-    --accent: #8b7cf8;
-    --accent-2: #38bdf8;
-    --accent-3: #22d3ee;
-    --radius-lg: 28px;
-    --radius-md: 18px;
-    --radius-pill: 999px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+:root {
+    --bg-primary: #070a13;
+    --bg-gradient-1: #0b1020;
+    --bg-gradient-2: #0f172a;
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-blur: 20px;
+    --text-primary: rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(200, 210, 230, 0.65);
+    --accent: #7dd3fc;
+    --accent-sub: #a78bfa;
+    --hover: rgba(255,255,255,0.075);
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
     min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.6;
-  }
-  .font-display { font-family: "Sora", "Noto Sans SC", system-ui, sans-serif; }
-
-  /* ============ Ambient背景完全复刻主页 ============ */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139, 124, 248, 0.12), transparent 60%),
-      var(--bg);
-  }
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.55;
-    will-change: transform;
-  }
-  .blob-1 {
-    width: 520px; height: 520px;
-    right: -120px; top: 8%;
-    background: radial-gradient(circle, #7c3aed 0%, #4f46e5 60%, transparent 75%);
-    animation: drift1 18s ease-in-out infinite alternate;
-  }
-  .blob-2 {
-    width: 420px; height: 420px;
-    left: -140px; top: 40%;
-    background: radial-gradient(circle, #0ea5e9 0%, #2563eb 60%, transparent 75%);
-    opacity: 0.35;
-    animation: drift2 22s ease-in-out infinite alternate;
-  }
-  .blob-3 {
-    width: 380px; height: 380px;
-    left: 30%; bottom: -160px;
-    background: radial-gradient(circle, #22d3ee 0%, #0891b2 60%, transparent 75%);
-    opacity: 0.28;
-    animation: drift3 26s ease-in-out infinite alternate;
-  }
-  @keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-60px, 40px) scale(1.15); } }
-  @keyframes drift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(50px, -50px) scale(1.1); } }
-  @keyframes drift3 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-40px, -30px) scale(1.2); } }
-
-  .bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-  }
-
-  /* ============ Layout ============ */
-  .wrap {
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 56px 24px 40px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* ✨纯CSS页面入场淡入（无JS，替代原来JS的reveal效果） */
-  .fade-in {
-    animation: fadeInUp 0.7s ease forwards;
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  .fade-in-delay {
-    animation-delay: 0.2s;
-  }
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* 404玻璃卡片 */
-  .page-404-card {
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at 20% 10%, var(--bg-gradient-1), var(--bg-primary) 55%, var(--bg-gradient-2));
+    color: var(--text-primary);
+    padding: 40px 18px;
     position: relative;
-    background: var(--glass);
-    border: 1px solid var(--stroke);
-    border-radius: var(--radius-lg);
-    padding: 60px 36px;
-    text-align: center;
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    max-width: 520px;
-    width: 100%;
-  }
-  .page-404-card::before {
+    overflow-x: hidden;
+}
+body::before,
+body::after {
     content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+    position: fixed;
+    width: 440px;
+    height: 440px;
+    border-radius: 999px;
+    filter: blur(110px);
+    opacity: 0.28;
     pointer-events: none;
-  }
-
-  .code-404 {
-    font-family: "Sora", sans-serif;
-    font-size: clamp(5rem,14vw,8rem);
-    font-weight: 800;
-    background: linear-gradient(180deg, #ffffff 30%, #8b94c9 100%);
+    z-index: 0;
+}
+body::before {
+    background: var(--accent);
+    top: -120px;
+    right: -80px;
+}
+body::after {
+    background: var(--accent-sub);
+    bottom: -100px;
+    left: -60px;
+}
+.container {
+    max-width: 1040px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+header {
+    margin-bottom: 32px;
+}
+h1 {
+    font-size: 30px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #e0f2fe, #a78bfa);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height:1;
-    margin-bottom:16px;
-  }
-  .title-404{
-    font-size:1.4rem;
-    color:var(--text);
-    margin-bottom:12px;
-  }
-  .desc-404{
-    color:var(--text-dim);
-    margin-bottom:32px;
-  }
-
-  /* 按钮样式复用主页btn */
-  .btn {
-    display: inline-flex;
+    color: transparent;
+    margin-bottom: 10px;
+}
+.desc {
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+.glass-card {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+    border: 1px solid var(--glass-border);
+    border-radius: 22px;
+    box-shadow: 0 12px 45px rgba(0,0,0,0.25);
+    padding: 24px;
+    margin-bottom: 22px;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.glass-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.18);
+}
+.glass-card h2 {
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
     align-items: center;
     gap: 9px;
-    padding: 13px 26px;
-    border-radius: var(--radius-pill);
-    background: var(--glass-strong);
-    border: 1px solid var(--stroke);
-    color: var(--text);
-    font-size: 0.95rem;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    width: 34%;
+    color: var(--text-secondary);
     font-weight: 500;
-    text-decoration: none;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-  .btn:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.13);
-    border-color: var(--stroke-strong);
-    box-shadow: 0 10px 28px rgba(139, 124, 248, 0.22);
-  }
-  .btn:active { transform: translateY(0); }
-
-  /* ✅ 页脚版权，和主页完全一样 */
-  footer {
-    margin-top: 64px;
-    text-align: center;
-    color: var(--text-faint);
-    font-size: 0.85rem;
-  }
-
-  /* ============ Responsive ============ */
-  @media (max-width: 720px) {
-    .wrap { padding:24px 16px; }
-    .page-404-card { padding:40px 20px; border-radius:22px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation: none !important;
-      transition: none !important;
-    }
-  }
+}
+td {
+    word-break: break-all;
+    color: rgba(224, 242, 254, 0.9);
+}
+tr:hover {
+    background: var(--hover);
+}
+.status-warn {
+    color: #fcd34d;
+}
+.status-err {
+    color: #fca5a5;
+}
+.btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: #e0f2fe;
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition: 0.2s;
+    margin-top:12px;
+}
+.btn:hover {
+    background: rgba(255,255,255,0.14);
+}
+.ip-link {
+    display: inline-block;
+    margin: 4px 6px 4px 0;
+    color: #7dd3fc;
+}
+.ip-link:hover {
+    color: #bae6fd;
+}
+.footer-note {
+    margin-top:40px;
+    text-align:center;
+    color: var(--text-secondary);
+    font-size:14px;
+}
+.footer-note a {
+    color:#7dd3fc;
+}
+.footer-note a:hover {
+    color:#bae6fd;
+}
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
+<div class="container">
+    <header>
+        <h1>设备信息检测器</h1>
+        <p class="desc">仅读取Web标准开放信息；网页无法读取MAC、硬盘序列号、显卡温度、功耗等底层硬件数据</p>
+    </header>
+
+    <noscript>
+        <section class="glass-card">
+            <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
+            <div>
+                ❌ JavaScript 已被禁用，JS检测不可用<br>
+                <a class="ip-link" target="_blank" href="https://httpbin.org/headers">👉 点击这里，手动查看服务器收到的UA头</a>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2>🖥️ WebGPU 适配器信息</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🎨 WebGL2 渲染信息</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🧾 基础环境信息</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🌐 网络信息（IPv4 / IPv6）</h2>
+            <div>
+                ❌ JavaScript 已被禁用，无法自动获取IP<br>
+                <a class="ip-link" target="_blank" href="https://ipv4.icanhazip.com/">👉 查看 IPv4</a>
+                <a class="ip-link" target="_blank" href="https://ipv6.icanhazip.com/">👉 查看 IPv6</a>
+            </div>
+        </section>
+        <section class="glass-card">
+            <h2>🖥️ 屏幕信息</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🔋 电池信息</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+        <section class="glass-card">
+            <h2>🔊 音视频设备</h2>
+            <div>❌ JavaScript 已被禁用</div>
+        </section>
+    </noscript>
+
+    <div id="jsContent" style="display:none;">
+        <section class="glass-card">
+            <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
+            <div id="privacyBox"></div>
+            <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+        </section>
+        <section class="glass-card">
+            <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
+            <div id="uaBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🖥️ WebGPU 适配器信息</h2>
+            <div id="webgpuBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🎨 WebGL2 渲染信息</h2>
+            <div id="webglBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🧾 基础环境信息</h2>
+            <div id="baseBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🌐 网络信息（IPv4 / IPv6）</h2>
+            <div id="netBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🖥️ 屏幕信息</h2>
+            <div id="screenBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🔋 电池信息</h2>
+            <div id="batteryBox"></div>
+        </section>
+        <section class="glass-card">
+            <h2>🔊 音视频设备</h2>
+            <button class="btn" onclick="getMediaDevice()">点击授权，读取音视频设备列表</button>
+            <div id="mediaBox"></div>
+        </section>
+    </div>
+
+    <div class="footer-note">
+        源码位置：<a target="_blank" rel="noopener noreferrer" href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html">https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html</a>
+    </div>
 </div>
+<script>
+const UAParser = (function(){
+    var r = function(e){
+        this.ua = e || "", this._cache = {};
+    };
+    r.VERSION = "2.0.2";
+    var p = r.prototype;
+    p.setUA = function(e){
+        return this.ua = e || "", this._cache = {}, this;
+    };
+    p.getUA = function(){return this.ua;};
+    p.getResult = function(){
+        return this._cache.result || (this._cache.result = {
+            ua:this.ua,
+            browser:this.getBrowser(),
+            engine:this.getEngine(),
+            os:this.getOS(),
+            device:this.getDevice(),
+            cpu:this.getCPU()
+        }), this._cache.result;
+    };
+    var browserRules = {
+        "Chrome":/(?:Chrome|CriOS)\/(\d+(?:\.\d+)*)/,
+        "Edge":/Edge\/(\d+(?:\.\d+)*)|Edg\/(\d+(?:\.\d+)*)/,
+        "Firefox":/(?:Firefox|FxiOS)\/(\d+(?:\.\d+)*)/,
+        "Safari":/Version\/(\d+(?:\.\d+)*).*Safari/,
+        "Opera":/Opera.*Version\/(\d+(?:\.\d+)*)|OPR\/(\d+(?:\.\d+)*)/
+    };
+    p.getBrowser = function(){
+        if(this._cache.browser) return this._cache.browser;
+        let out = {name:"",version:"",major:""};
+        for(let k in browserRules){
+            let m = this.ua.match(browserRules[k]);
+            if(m){
+                out.name = k;
+                out.version = m[1]||m[2]||"";
+                out.major = out.version.split(".")[0];
+                break;
+            }
+        }
+        this._cache.browser = out;
+        return out;
+    };
+    p.getEngine = function(){
+        if(this._cache.engine) return this._cache.engine;
+        let out = {name:"",version:""};
+        if(/AppleWebKit/.test(this.ua)) out.name="WebKit";
+        else if(/Gecko\//.test(this.ua)) out.name="Gecko";
+        this._cache.engine = out;
+        return out;
+    };
+    p.getOS = function(){
+        if(this._cache.os) return this._cache.os;
+        let out = {name:"",version:""};
+        if(/Windows NT (\d+\.\d+)/.test(this.ua)){
+            out.name="Windows";
+            out.version = RegExp.$1;
+        }else if(/Mac OS X (\d+(?:[_\\.])*)/.test(this.ua)){
+            out.name="MacOS";
+            out.version = RegExp.$1;
+        }else if(/Android\s*(\d+(?:\.\d+)*)/.test(this.ua)){
+            out.name="Android";
+            out.version = RegExp.$1;
+        }else if(/OS (\d+(?:[_\\.])*)/.test(this.ua) && /iPhone|iPad|iPod/.test(this.ua)){
+            out.name="iOS";
+            out.version = RegExp.$1;
+        }else if(/Linux/.test(this.ua)) out.name="Linux";
+        this._cache.os = out;
+        return out;
+    };
+    p.getCPU = function(){
+        if(this._cache.cpu) return this._cache.cpu;
+        let out = {architecture:""};
+        let m = this.ua.match(/\b(x86|x64|arm|aarch64|ARM64)\b/i);
+        if(m) out.architecture = m[0].toLowerCase();
+        this._cache.cpu = out;
+        return out;
+    };
+    p.getDevice = function(){
+        if(this._cache.device) return this._cache.device;
+        let out = {type:"",vendor:"",model:""};
+        this._cache.device = out;
+        return out;
+    };
+    return r;
+})();
 
-<main class="wrap">
-  <div class="page-404-card fade-in">
-    <div class="code-404">404</div>
-    <h2 class="title-404">Not Found</h2>
-    <p class="desc-404">你访问的页面不存在，链接可能已经失效或被移除。</p>
-    <a class="btn" href="/">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m3 12 7-7v4h11v6H10v4z"/>
-      </svg>
-      返回主页
-    </a>
-  </div>
+let parser, uaResult = {
+    browser: {name:"未知",version:"",major:""},
+    os:{name:"未知",version:""},
+    cpu:{architecture:"未知"},
+    device:{type:"",vendor:"",model:""}
+};
+const rawUA = navigator.userAgent;
+let isTimeout = false;
+const MAX_TIME = 20000;
 
-  <!-- 删掉了内联style，改用 fade-in-delay 类 -->
-  <footer class="fade-in fade-in-delay">
-    Copyright 2026 JimmyXiao. All Rights Reserved.
-  </footer>
-</main>
+let mediaTimeoutTriggered = false;
+const MEDIA_MAX_TIME = 20000;
 
+function makeTable(rows) {
+    let html = '<table>';
+    for (const [label, value] of rows) {
+        html += `<tr><th>${label}</th><td>${value}</td></tr>`;
+    }
+    html += '</table>';
+    return html;
+}
+
+function runAllDetect() {
+try {
+    parser = new UAParser(rawUA);
+    uaResult = parser.getResult();
+} catch(e) {
+    console.error("UAParser error",e);
+    uaResult = {
+        browser: {name:"未知",version:"",major:""},
+        os:{name:"未知",version:""},
+        cpu:{architecture:"未知"},
+        device:{type:"",vendor:"",model:""}
+    };
+}
+
+document.getElementById('jsContent').style.display = "block";
+
+const boxes = [
+    document.getElementById('privacyBox'),
+    document.getElementById('uaBox'),
+    document.getElementById('webgpuBox'),
+    document.getElementById('webglBox'),
+    document.getElementById('baseBox'),
+    document.getElementById('netBox'),
+    document.getElementById('screenBox'),
+    document.getElementById('batteryBox')
+    // mediaBox 移除，初始化不写检测中
+];
+boxes[0].innerHTML = `<p class="status-warn">检测中...</p>`;
+boxes[1].innerHTML = `<p class="status-warn">解析UA中...</p>`;
+for(let i=2;i<boxes.length;i++){
+    boxes[i].innerHTML = `<p class="status-warn">检测中...</p>`;
+}
+
+function setTimeoutAll() {
+    setTimeout(() => {
+        isTimeout = true;
+        boxes.forEach(el => {
+            if(el.textContent.includes("检测中") || el.textContent.includes("解析UA中")){
+                el.innerHTML = `<p class="status-err">⏱️ 检测超时失败（超过20秒）</p>`;
+            }
+        })
+    }, MAX_TIME);
+}
+setTimeoutAll();
+}
+
+function startAdDetect(){
+    const box = document.getElementById("privacyBox");
+    const bait = document.getElementById("ad-bait");
+    let adBlockDetected = false;
+    const check = (cnt = 0) => {
+        const st = getComputedStyle(bait);
+        if(st.display === "none" || st.visibility === "hidden" || st.opacity === "0"){
+            adBlockDetected = true;
+        }
+        if(cnt >= 5){
+            if(isTimeout) return;
+            const dnt = navigator.doNotTrack;
+            let dntText = "未开启";
+            if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
+            const rows = [
+                ["JavaScript状态", "✅ 已启用"],
+                ["Do Not Track(DNT)", dntText],
+                ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
+            ];
+            box.innerHTML = makeTable(rows);
+            return;
+        }
+        setTimeout(()=>check(cnt+1), 80);
+    }
+    check();
+}
+
+let serverUA = "⏳ 自动请求中...";
+let uaHttpCompareResult = "🔘 等待服务器返回";
+
+async function autoFetchServerUA(){
+    try {
+        const ctl = new AbortController();
+        const t = setTimeout(()=>ctl.abort(), 4000);
+        const res = await fetch("https://httpbin.org/headers", {signal:ctl.signal});
+        clearTimeout(t);
+        const json = await res.json();
+        serverUA = json.headers["User-Agent"] ?? "无";
+        if(serverUA === rawUA){
+            uaHttpCompareResult = "✅ HTTP头UA 和 JS UA一致";
+        }else{
+            uaHttpCompareResult = "⚠️ HTTP头UA 和 JS UA不一致 → 存在篡改（仅参考）";
+        }
+    }catch(err){
+        serverUA = "获取失败（超时/被拦截）";
+        uaHttpCompareResult = "❌ 拉取服务器UA失败";
+    }
+}
+
+async function startUADetect(){
+    const box = document.getElementById("uaBox");
+    if(isTimeout) return;
+
+    await autoFetchServerUA();
+
+    let browserName = uaResult.browser.name || "未知";
+    if(rawUA.includes("QQEX")) browserName = "QQEX（QQ内嵌网页内核）";
+    let arch = uaResult.cpu.architecture || "未知";
+    let bitness = "不支持（非Chromium）";
+    let platformRaw = uaResult.os.name || "未知";
+    let platformHint = "-";
+    let uaTamperCheck = "✅ 未发现平台不一致（仅供参考）";
+    try{
+        if(navigator.userAgentData?.getHighEntropyValues){
+            const hint = await navigator.userAgentData.getHighEntropyValues(["architecture","bitness","platform","platformVersion"]);
+            bitness = hint.bitness;
+            platformHint = hint.platform;
+            const uaIsWin = /Windows NT/i.test(rawUA);
+            const hintIsWin = /Windows/i.test(platformHint);
+            const uaIsMac = /Mac OS X/i.test(rawUA);
+            const hintIsMac = /macOS/i.test(platformHint);
+            const uaIsAndroid = /Android/i.test(rawUA);
+            const hintIsAndroid = /Android/i.test(platformHint);
+            if( (uaIsWin && !hintIsWin) || (uaIsMac && !hintIsMac) || (uaIsAndroid && !hintIsAndroid) ){
+                uaTamperCheck = "⚠️ UA与ClientHint平台不一致，疑似篡改（仅供参考）";
+            }
+        }
+    }catch(e){
+        uaTamperCheck = "⚠️ 无法获取ClientHint，无法校验UA一致性（仅供参考）";
+    }
+    function renderUATable(){
+        const rows = [
+            ["JS读取完整UA字符串", rawUA],
+            ["服务器收到的UA", serverUA],
+            ["HTTP头UA vs JS-UA", uaHttpCompareResult],
+            ["识别浏览器", browserName],
+            ["识别系统(UA)", platformRaw],
+            ["系统(ClientHint)", platformHint],
+            ["CPU架构", arch],
+            ["系统位数", bitness],
+            ["ClientHint平台校验", uaTamperCheck]
+        ];
+        box.innerHTML = makeTable(rows);
+    }
+    renderUATable();
+}
+
+async function startWebGPU(){
+    const box = document.getElementById("webgpuBox");
+    if(isTimeout) return;
+    if(!navigator.gpu){
+        box.innerHTML = '<p class="status-warn">❌ 当前浏览器不支持WebGPU</p>';
+        return;
+    }
+    try{
+        const adapter = await navigator.gpu.requestAdapter();
+        if(!adapter){
+            box.innerHTML = '<p class="status-warn">✅ 支持WebGPU，但无法获取适配器信息（浏览器限制）</p>';
+            return;
+        }
+        let info;
+        if (adapter.info) {
+            info = adapter.info;
+        } else if (typeof adapter.requestAdapterInfo === "function") {
+            info = await adapter.requestAdapterInfo();
+        } else {
+            info = {
+                vendor: "浏览器版本处于WebGPU API过渡期",
+                architecture: "",
+                device: "当前版本无法读取GPU适配器信息",
+                description: "API接口不匹配"
+            };
+        }
+        const rows = [
+            ["GPU厂商", info.vendor || "未知"],
+            ["GPU架构", info.architecture || "未知"],
+            ["GPU型号", info.device || "未知"],
+            ["描述", info.description || "无"]
+        ];
+        box.innerHTML = makeTable(rows);
+    }catch(e){
+        box.innerHTML = `<p class="status-err">WebGPU检测失败：${e.message}</p>`;
+    }
+}
+
+function startWebGL(){
+    const box = document.getElementById("webglBox");
+    if(isTimeout) return;
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2");
+    if(!gl){
+        box.innerHTML = '<p class="status-warn">❌ 不支持WebGL2</p>';
+        return;
+    }
+    const debug = gl.getExtension("WEBGL_debug_renderer_info");
+    const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+    const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    const rows = [
+        ["WebGL厂商", vendor],
+        ["WebGL渲染器", renderer]
+    ];
+    box.innerHTML = makeTable(rows);
+}
+
+function startBaseInfo(){
+    const box = document.getElementById("baseBox");
+    if(isTimeout) return;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const langs = navigator.languages.join("、");
+    const rows = [
+        ["User-Agent", rawUA],
+        ["设备像素比", window.devicePixelRatio],
+        ["时区", tz],
+        ["语言列表", langs]
+    ];
+    box.innerHTML = makeTable(rows);
+}
+
+async function fetchIp(url, timeout=3000){
+    try{
+        const ctl = new AbortController();
+        const t = setTimeout(()=>ctl.abort(), timeout);
+        const res = await fetch(url, {signal:ctl.signal});
+        clearTimeout(t);
+        if(res.ok) return (await res.text()).trim();
+    }catch(e){}
+    return "获取失败";
+}
+
+async function startNetInfo(){
+    const box = document.getElementById("netBox");
+    if(isTimeout) return;
+    const ipv4 = await fetchIp("https://ipv4.icanhazip.com");
+    const ipv6 = await fetchIp("https://ipv6.icanhazip.com");
+    let localIp = "浏览器隐私策略禁止获取内网IP";
+    let netType = navigator.connection?.effectiveType ?? "不支持";
+    let rtt = navigator.connection?.rtt ?? "-";
+    const rows = [
+        ["公网IPv4", ipv4],
+        ["公网IPv6", ipv6],
+        ["内网IP(WebRTC)", localIp],
+        ["网络类型", netType],
+        ["预估RTT(ms)", rtt]
+    ];
+    box.innerHTML = makeTable(rows);
+}
+
+async function startScreenInfo(){
+    const box = document.getElementById("screenBox");
+    if(isTimeout) return;
+    let refresh = "不支持";
+    let screenCount = "不支持";
+    try {
+        if(window.getScreenDetails){
+            const s = await window.getScreenDetails();
+            refresh = s.currentScreen.refreshRate.toFixed(0)+" Hz";
+            screenCount = s.screens.length + " 块屏幕";
+        }
+    }catch(err){
+    }
+    const rows = [
+        ["屏幕分辨率", screen.width + " × " + screen.height],
+        ["可用区域", screen.availWidth + " × " + screen.availHeight],
+        ["刷新率", refresh],
+        ["屏幕数量", screenCount],
+        ["色彩深度", screen.colorDepth + " bit"]
+    ];
+    box.innerHTML = makeTable(rows);
+}
+
+async function startBattery(){
+    const box = document.getElementById("batteryBox");
+    if(isTimeout) return;
+    if(!navigator.getBattery){
+        box.innerHTML = '<p class="status-warn">❌ 当前浏览器不支持Battery API</p>';
+        return;
+    }
+    try{
+        const bat = await navigator.getBattery();
+        const rows = [
+            ["电量", (bat.level*100).toFixed(0)+"%"],
+            ["是否充电", bat.charging ? "✅ 充电中" : "❌ 未充电"]
+        ];
+        box.innerHTML = makeTable(rows);
+    }catch(e){
+        box.innerHTML = `<p class="status-err">电池检测失败：${e.message}</p>`;
+    }
+}
+
+window.getMediaDevice = async function() {
+    const box = document.getElementById("mediaBox");
+    let mediaTimer = null;
+    if(!mediaTimeoutTriggered){
+        mediaTimeoutTriggered = true;
+        mediaTimer = setTimeout(()=>{
+            box.innerHTML = `<p class="status-err">⏱️音视频检测超时（点击后超过20秒）</p>`;
+        }, MEDIA_MAX_TIME);
+    }
+
+    box.innerHTML = `<p class="status-warn">正在请求媒体权限...</p>`;
+    const mediaTimeout = new Promise((_, reject) => setTimeout(()=>reject(new Error("media_timeout")), 8000));
+    try {
+        const stream = await Promise.race([
+            navigator.mediaDevices.getUserMedia({audio:true, video:true}),
+            mediaTimeout
+        ]);
+        stream.getTracks().forEach(t=>t.stop());
+        const devs = await navigator.mediaDevices.enumerateDevices();
+        clearTimeout(mediaTimer);
+        if(devs.length === 0){
+            box.innerHTML = `<p class="status-warn">权限已授予，但浏览器拒绝返回设备标签</p>`;
+            return;
+        }
+        const kindMap = {
+            "audioinput": "🎤 麦克风",
+            "audiooutput": "🔊 扬声器",
+            "videoinput": "📷 摄像头"
+        };
+        const rows = [];
+        devs.forEach(d=>{
+            const name = kindMap[d.kind] || d.kind;
+            const label = d.label.trim() || "无标签（浏览器限制）";
+            rows.push([name, label]);
+        });
+        box.innerHTML = makeTable(rows);
+    }catch(e){
+        clearTimeout(mediaTimer);
+        if(e.message === "media_timeout"){
+            box.innerHTML = `<p class="status-err">⏱️ 媒体检测超时（8秒）</p>`;
+        }else if(e.name === "NotAllowedError"){
+            box.innerHTML = `<p class="status-err">❌ 用户拒绝媒体授权</p>`;
+        }else{
+            box.innerHTML = `<p class="status-err">获取失败：${e.message}</p>`;
+        }
+    }
+}
+
+runAllDetect();
+startAdDetect();
+startUADetect();
+startWebGPU();
+startWebGL();
+startBaseInfo();
+startNetInfo();
+startScreenInfo();
+startBattery();
+</script>
 </body>
 </html>
