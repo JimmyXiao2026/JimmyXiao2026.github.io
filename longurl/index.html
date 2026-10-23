@@ -2,13 +2,12 @@
 <html lang="zh-Hans">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>链接加长器 — 让任何链接变得要多长有多长</title>
 <meta name="description" content="把任意链接加长到你指定的精确长度（含协议头）。大家都在想办法把链接变短——长一点又怎么样呢？">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#05060e">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://jimmyxiao2026.github.io/longurl/">
-
 <!-- Social cards -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Link Expander">
@@ -25,10 +24,9 @@
 <meta name="twitter:title" content="链接加长器 — 让任何链接变得要多长有多长">
 <meta name="twitter:description" content="把任意链接加长到你指定的精确长度（含协议头）。">
 <meta name="twitter:image" content="https://jimmyxiao2026.github.io/longurl/og.png">
-
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css">
-
+<link rel="preconnect" href="https://miaoda.feishu.cn" crossorigin />
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -46,7 +44,6 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
 </script>
-
 <script>
 // Decided before the app boots: a generated link is not the generator page, so
 // hide the generator immediately instead of flashing it. Crawlers that do not
@@ -59,68 +56,380 @@ if (__p.length > 0 && !/^\/(index\.html)?$/.test(__p)) {
   document.documentElement.className = 'deep-link';
 }
 </script>
+<style>
+/* ============ Tokens 复制自个人主页 ============ */
+:root {
+  --bg: #05060e;
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-strong: rgba(255, 255, 255, 0.08);
+  --stroke: rgba(255, 255, 255, 0.09);
+  --stroke-strong: rgba(255, 255, 255, 0.16);
+  --text: #e8ecf8;
+  --text-dim: #9aa3bd;
+  --text-faint: #6b7390;
+  --accent: #8b7cf8;
+  --accent-2: #38bdf8;
+  --accent-3: #22d3ee;
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-pill: 999px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.7;
+}
+.font-display { font-family: "Sora", "Noto Sans SC", system-ui, sans-serif; }
+
+/* 生成出来的长链接不是生成器页面：index.html 在应用启动前就打好标记，
+   这样跳转前不会先闪一下表单（原来写在 styles.css 里） */
+.deep-link #view-generator { display: none; }
+
+/* ============ Ambient background ============ */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139, 124, 248, 0.12), transparent 60%),
+    var(--bg);
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.blob-1 {
+  width: 520px; height: 520px;
+  right: -120px; top: 8%;
+  background: radial-gradient(circle, #7c3aed 0%, #4f46e5 60%, transparent 75%);
+  animation: drift1 18s ease-in-out infinite alternate;
+}
+.blob-2 {
+  width: 420px; height: 420px;
+  left: -140px; top: 40%;
+  background: radial-gradient(circle, #0ea5e9 0%, #2563eb 60%, transparent 75%);
+  opacity: 0.35;
+  animation: drift2 22s ease-in-out infinite alternate;
+}
+.blob-3 {
+  width: 380px; height: 380px;
+  left: 30%; bottom: -160px;
+  background: radial-gradient(circle, #22d3ee 0%, #0891b2 60%, transparent 75%);
+  opacity: 0.28;
+  animation: drift3 26s ease-in-out infinite alternate;
+}
+@keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-60px, 40px) scale(1.15); } }
+@keyframes drift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(50px, -50px) scale(1.1); } }
+@keyframes drift3 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-40px, -30px) scale(1.2); } }
+/* subtle noise */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ============ Layout ============ */
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+/* 主卡片玻璃面板 */
+.card-panel {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px 36px;
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.card-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+  pointer-events: none;
+}
+
+h1#title {
+  font-family: "Sora", "Noto Sans SC", system-ui, sans-serif;
+  font-weight:700;
+  font-size: clamp(1.8rem,4vw,2.4rem);
+  letter-spacing:-0.02em;
+  background: linear-gradient(180deg,#ffffff 30%,#b9c2e8 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:10px;
+  text-align:center;
+}
+p.st#subtitle {
+  text-align:center;
+  color:var(--text-dim);
+  margin-bottom:32px;
+}
+
+/* 表单控件 */
+form#form p {
+  margin-bottom:18px;
+}
+label {
+  display:block;
+  margin-bottom:7px;
+  font-weight:500;
+  color:var(--text);
+}
+input[type="text"],
+input[type="number"],
+textarea {
+  width:100%;
+  background: var(--glass-strong);
+  border:1px solid var(--stroke);
+  border-radius:12px;
+  color:var(--text);
+  padding:12px 14px;
+  font-size:0.95rem;
+  outline:none;
+  transition:border 0.22s ease, box-shadow 0.22s ease;
+}
+input:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(139,124,248,0.35);
+}
+textarea#output {
+  resize:none;
+}
+
+/* 按钮样式 pill */
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:11px 24px;
+  border-radius:var(--radius-pill);
+  background:var(--glass-strong);
+  border:1px solid var(--stroke);
+  color:var(--text);
+  font-size:0.94rem;
+  font-weight:500;
+  cursor:pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform 0.24s ease, background 0.24s ease, border-color 0.24s ease;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  background:rgba(255,255,255,0.13);
+  border-color:var(--stroke-strong);
+  box-shadow:0 10px 28px rgba(139,124,248,0.22);
+}
+.btn:active { transform:translateY(0); }
+
+#submit { width:100%; margin-top:6px; }
+
+.meta {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.count { color:var(--text-dim); font-size:0.88rem; }
+
+a#open {
+  display:inline-block;
+  margin-top:12px;
+  color:var(--accent-2);
+  text-decoration:none;
+}
+a#open:hover { text-decoration:underline; }
+
+h2#how-title {
+  margin-top:32px;
+  font-family:"Sora",sans-serif;
+  font-size:1.2rem;
+  font-weight:600;
+}
+#how-body, #limits-body {
+  color:var(--text-dim);
+  margin-top:8px;
+  font-size:0.93rem;
+}
+.credit {
+  margin-top:24px;
+  font-size:0.86rem;
+  color:var(--text-faint);
+  text-align:center;
+  line-height: 1.8;
+}
+.credit br.small-only { display: none; }
+/* 竖屏小屏幕才换行 */
+@media (max-width: 640px) {
+  .credit br.small-only { display: block; }
+}
+.credit a { color:var(--accent-2); text-decoration:none; }
+.credit a:hover { text-decoration:underline; }
+
+/* message提示 */
+.message {
+  margin:14px 0;
+  padding:12px 14px;
+  border-radius:12px;
+  background:rgba(255,80,80,0.08);
+  border:1px solid rgba(255,100,100,0.18);
+  font-size:0.9rem;
+  color:#ffb4b4;
+}
+.message.ok {
+  background:rgba(80,200,120,0.08);
+  border:1px solid rgba(100,220,140,0.2);
+  color:#b0f2c2;
+}
+
+/* 语言切换按钮 */
+#lang.toggle {
+  position:fixed;
+  top:16px;
+  right:16px;
+  z-index:10;
+}
+
+/* 跳转页面 redirect view */
+#view-redirect .card-panel {
+  text-align:center;
+}
+#redirect-link {
+  color:var(--accent-2);
+  word-break:break-all;
+}
+
+/* reveal动画 */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.in { opacity:1; transform: translateY(0); }
+
+@media (max-width:640px) {
+  .wrap { padding:32px 14px 60px; }
+  .card-panel { padding:30px 20px 28px; border-radius:22px; }
+  #lang.toggle { top:12px; right:12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal { opacity:1; transform:none; }
+}
+</style>
 </head>
 <body>
-<button id="lang" class="toggle" type="button" aria-label="切换语言 / Switch language">English</button>
+<div class="bg" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
 
+<button id="lang" class="toggle btn" type="button" aria-label="切换语言 / Switch language">English</button>
 <noscript>
-  <p>本页是一个小型单页应用，生成链接需要 JavaScript。（This page needs JavaScript to build a link.）</p>
+  <div class="wrap reveal">
+    <div class="card-panel">
+      <p>本页是一个小型单页应用，生成链接需要 JavaScript。（This page needs JavaScript to build a link.）</p>
+    </div>
+  </div>
 </noscript>
-
-<main>
-  <section id="view-generator">
-    <h1 id="title">链接加长器</h1>
-    <p class="st" id="subtitle">很多人都在想办法把链接变短，长一点又怎么样呢？</p>
-
-    <form id="form" novalidate>
-      <p>
-        <label for="target" id="label-target">要加长的链接</label>
-        <input id="target" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-               placeholder="https://example.com">
+<main class="wrap">
+  <section id="view-generator" class="reveal">
+    <div class="card-panel">
+      <h1 id="title">链接加长器</h1>
+      <p class="st" id="subtitle">很多人都在想办法把链接变短，长一点又怎么样呢？</p>
+      <form id="form" novalidate>
+        <p>
+          <label for="target" id="label-target">要加长的链接</label>
+          <input id="target" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                 placeholder="https://example.com">
+        </p>
+        <p>
+          <label for="seed" id="label-seed">随机种子（可选）</label>
+          <input id="seed" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                 placeholder="留空则随机生成一个">
+        </p>
+        <p>
+          <label for="length" id="label-length">目标总长度，含协议头（字符数）</label>
+          <input id="length" type="number" inputmode="numeric" min="1" step="1" value="128">
+        </p>
+        <p><button type="submit" id="submit" class="btn">加长</button></p>
+      </form>
+      <p id="message" class="message" role="alert" aria-live="polite" hidden></p>
+      <section id="result" hidden>
+        <p><label for="output" id="label-result">你的超长链接</label></p>
+        <textarea id="output" rows="3" readonly spellcheck="false"></textarea>
+        <p class="meta">
+          <button type="button" id="copy" class="btn">复制</button>
+          <span id="count" class="count"></span>
+        </p>
+        <p><a id="open" href="#" rel="noopener">打开测试一下</a></p>
+      </section>
+      <h2 id="how-title">这是怎么做到的？</h2>
+      <p id="how-body">链接里只有少数几个字符记录了目标地址和种子，其余都是根据种子生成的噪音，用来把链接凑到你要求的长度。
+        相同的目标地址、种子和长度永远能复原出一模一样的链接，不会丢东西；打开链接就会跳到你的目标地址。</p>
+      <p id="limits-body">最长支持 8192 个字符；超过 2000 时，部分浏览器、聊天软件和邮件客户端会开始截断，到那一步页面会提醒你。
+        目标地址必须以 http:// 或 https:// 开头。</p>
+      <p class="credit" id="credit-wrap">
+        <span id="credit-text"></span>
       </p>
-      <p>
-        <label for="seed" id="label-seed">随机种子（可选）</label>
-        <input id="seed" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-               placeholder="留空则随机生成一个">
-      </p>
-      <p>
-        <label for="length" id="label-length">目标总长度，含协议头（字符数）</label>
-        <input id="length" type="number" inputmode="numeric" min="1" step="1" value="128">
-      </p>
-      <p><button type="submit" id="submit">加长</button></p>
-    </form>
-
-    <p id="message" class="message" role="alert" aria-live="polite" hidden></p>
-
-    <section id="result" hidden>
-      <p><label for="output" id="label-result">你的超长链接</label></p>
-      <textarea id="output" rows="3" readonly spellcheck="false"></textarea>
-      <p class="meta">
-        <button type="button" id="copy">复制</button>
-        <span id="count" class="count"></span>
-      </p>
-      <p><a id="open" href="#" rel="noopener">打开测试一下</a></p>
-    </section>
-
-    <h2 id="how-title">这是怎么做到的？</h2>
-    <p id="how-body">链接里只有少数几个字符记录了目标地址和种子，其余都是根据种子生成的噪音，用来把链接凑到你要求的长度。
-      相同的目标地址、种子和长度永远能复原出一模一样的链接，不会丢东西；打开链接就会跳到你的目标地址。</p>
-    <p id="limits-body">最长支持 8192 个字符；超过 2000 时，部分浏览器、聊天软件和邮件客户端会开始截断，到那一步页面会提醒你。
-      目标地址必须以 http:// 或 https:// 开头。</p>
-    <p class="credit"><span id="credit-text">纯 HTML、CSS 和 JS，没有任何追踪。风格参照 </span><a
-      href="https://thebestmotherfuckingweb.site" rel="noopener">thebestmotherfuckingweb.site</a>
-      · <a id="credit-repo" href="https://github.com/JwbFut/link-expander" rel="noopener">GitHub 源码</a></p>
+    </div>
   </section>
 
-  <section id="view-redirect" hidden>
-    <h1 id="redirect-title">正在跳转…</h1>
-    <p id="redirect-manual">如果没有自动跳转，请打开这个链接：</p>
-    <p><a id="redirect-link" href="#"></a></p>
-    <p id="redirect-note" class="message" hidden></p>
-    <p class="credit"><a id="redirect-home" href="./">← 链接加长器</a></p>
+  <section id="view-redirect" hidden class="reveal">
+    <div class="card-panel">
+      <h1 id="redirect-title">正在跳转…</h1>
+      <p id="redirect-manual">如果没有自动跳转，请打开这个链接：</p>
+      <p><a id="redirect-link" href="#"></a></p>
+      <p id="redirect-note" class="message" hidden></p>
+      <p class="credit"><a id="redirect-home" href="./">← 链接加长器</a></p>
+    </div>
   </section>
 </main>
 
 <script type="module" src="app.js"></script>
+<script>
+// 滚动reveal动画，和个人主页保持一致
+(function(){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    })
+  },{threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+</script>
 </body>
 </html>

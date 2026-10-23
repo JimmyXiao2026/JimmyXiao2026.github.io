@@ -4,9 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>应用下载 · JimmyXiao</title>
+<meta name="description" content="常用软件的官方下载直链：Windows、Linux、macOS、Android 分类，含 UU远程、AutoHotkey、爱思助手、Listen1 等，链接尽量指向官方发布页。" />
+<meta name="theme-color" content="#05060e" />
+<link rel="canonical" href="https://jimmyxiao2026.github.io/apps/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://jimmyxiao2026.github.io/apps/" />
+<meta property="og:title" content="应用下载 · JimmyXiao" />
+<meta property="og:description" content="常用软件的官方下载直链，按平台分类，全部免费。" />
+<meta property="og:locale" content="zh_CN" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" />
-<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <style>
   :root {
     --bg: #05060e;
@@ -142,6 +150,9 @@
     * { animation: none !important; transition: none !important; }
   }
 </style>
+<noscript>
+  <style>#initial-loading { display: none; }</style>
+</noscript>
 </head>
 <body>
 
@@ -165,10 +176,15 @@
     <p>常用软件收集 · 全部免费直链</p>
   </div>
 
-  <section class="cards" id="cards">
-    <div class="card loading">
+  <section class="cards" id="cards" aria-live="polite" aria-busy="true">
+    <div class="card loading" id="initial-loading">
       <div class="info"><p>正在加载 apps.yml…</p></div>
     </div>
+    <noscript>
+      <div class="card empty">
+        <div class="info"><p>应用列表需要 JavaScript 才能渲染，请开启后刷新。</p></div>
+      </div>
+    </noscript>
   </section>
 
   <footer>
@@ -179,6 +195,8 @@
 
 </main>
 
+<!-- YAML 解析库放到 body 末尾：页面先渲染，再加载 30KB 的解析器 -->
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 <script>
 (function () {
   'use strict';
@@ -234,6 +252,8 @@
 
   function render() {
     var p = currentPlatform();
+    var cards = document.getElementById('cards');
+    cards.setAttribute('aria-busy', 'false');
 
     var tabs = document.querySelectorAll('#tabs .tab');
     for (var i = 0; i < tabs.length; i++) {
@@ -247,7 +267,6 @@
     document.getElementById('h1').textContent = h1;
 
     var list = data.apps.concat(BUILTIN_APPS).filter(function (a) { return p === 'all' || a.platform === p; });
-    var cards = document.getElementById('cards');
 
     if (!list.length) {
       cards.innerHTML = '<div class="card empty"><div class="info"><p>该平台暂无收录应用，敬请期待。</p></div></div>';
@@ -308,6 +327,13 @@
   }
 
   function load() {
+    var cardsEl = document.getElementById('cards');
+    if (!window.jsyaml) {
+      cardsEl.setAttribute('aria-busy', 'false');
+      cardsEl.innerHTML = '<div class="card empty"><div class="info"><p>'
+        + 'YAML 解析库没能加载（可能被网络或插件拦截），应用列表暂时无法显示。</p></div></div>';
+      return;
+    }
     fetch('apps.yml', { cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -319,7 +345,8 @@
         render();
       })
       .catch(function (e) {
-        document.getElementById('cards').innerHTML =
+        cardsEl.setAttribute('aria-busy', 'false');
+        cardsEl.innerHTML =
           '<div class="card empty"><div class="info"><p>加载 apps.yml 失败：' + esc(e.message)
           + '。本地 file:// 直接打开会被浏览器拦截，请用本地 HTTP 服务预览或直接访问线上地址。</p></div></div>';
       });

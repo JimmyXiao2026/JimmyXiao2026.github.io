@@ -2,8 +2,13 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Exbox 服务器列表 · JimmyXiao</title>
+<meta name="description" content="网易国服 Minecraft 服务器列表：按名称、编号、版本搜索，查看服务器地址与简介，一键复制编码或推送到 Exbox 客户端。">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://jimmyxiao2026.github.io/servers/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2316213e'/%3E%3Crect x='6' y='8' width='20' height='7' rx='2' fill='%238b7cf8'/%3E%3Crect x='6' y='18' width='20' height='7' rx='2' fill='%2338bdf8'/%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #1a1a2e;
@@ -44,8 +49,12 @@
     border-color: rgba(0, 0, 0, 0.16);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  :focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: 2px;
+  }
   body {
-    font-family: "Microsoft YaHei", sans-serif;
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     display: flex;
@@ -71,9 +80,10 @@
     cursor: pointer;
   }
   .sidebar .nav-item {
+    display: block;
     padding: 10px 20px;
-    cursor: pointer;
     color: var(--text-dim);
+    text-decoration: none;
     transition: background 0.15s;
   }
   .sidebar .nav-item:hover { background: var(--accent); color: #fff; }
@@ -138,6 +148,7 @@
     font-size: 14px;
   }
   .home-btn {
+    display: inline-block;
     margin-top: 32px;
     background: #00882a;
     border: 2px solid #005a1c;
@@ -145,11 +156,23 @@
     padding: 14px 48px;
     border-radius: 4px;
     cursor: pointer;
-    font-family: "Microsoft YaHei", sans-serif;
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
     font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
     box-shadow: inset 0 -4px 0 rgba(0,0,0,0.3);
   }
   .home-btn:hover { background: #00aa33; }
+  .home-back {
+    margin-top: 18px;
+    font-size: 13px;
+  }
+  .home-back a {
+    color: var(--text-dim);
+    text-decoration: none;
+  }
+  .home-back a:hover { color: var(--text); text-decoration: underline; }
 
   /* 列表页 */
   .search-bar {
@@ -177,9 +200,8 @@
   #listView {
     flex: 1;
     min-height: 0;
-    display: flex;
+    display: none; /* JS 切到列表时设为 flex */
     flex-direction: column;
-    display: none;
   }
 
   .server-list {
@@ -202,6 +224,9 @@
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
+    /* 列表很长：屏幕外的卡片跳过渲染，滚动更顺 */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 240px;
   }
   .server-card:hover {
     transform: translateY(-3px);
@@ -471,18 +496,31 @@
       text-align: center;
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
 </style>
 </head>
 <body>
 
-<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
-<button class="detail-back-btn" id="detailBackBtn" onclick="location.hash='#/servers/'"><</button>
+<noscript>
+  <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;background:#1a1a2e;color:#eee;font-family:'Microsoft YaHei',sans-serif;z-index:9999;">
+    <p>服务器列表需要 JavaScript（数据加载与页面切换都依赖它），请开启后刷新。</p>
+  </div>
+</noscript>
+
+<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="打开菜单">☰</button>
+<button class="detail-back-btn" id="detailBackBtn" onclick="goBackToList()" aria-label="返回列表">←</button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar" id="sidebar" onclick="if(window.innerWidth <= 768) closeSidebar()">
   <h2 id="homeLink" onclick="location.hash='#/'">Exbox</h2>
-  <div class="nav-item" id="navServers" onclick="location.hash='#/servers/'">服务器</div>
-  <div class="nav-item" id="navRental" onclick="location.hash='#/rental/'">租赁服</div>
+  <a class="nav-item" id="navServers" href="#/servers/">服务器</a>
+  <a class="nav-item" id="navRental" href="#/rental/">租赁服</a>
   <button class="theme-btn" id="themeBtn">🌙 深色模式</button>
 </div>
 
@@ -504,6 +542,8 @@
         本页面提供服务器列表和编码查询，方便快速查找目标服务器。
       </p>
     </div>
+    <a class="home-btn" href="#/servers/">浏览服务器列表</a>
+    <p class="home-back"><a href="/">← 返回 JimmyXiao 个人主页</a></p>
     <div class="warning" style="margin-top:40px; font-size:12px; color:var(--text-dim); background:none; border:none;">
       本项目不开源，禁止二次分发。
     </div>
@@ -511,7 +551,7 @@
 
   <div id="listView">
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="搜索服务器名称/版本/@编号...">
+      <input type="text" id="searchInput" placeholder="搜索服务器名称/版本/@编号..." aria-label="搜索服务器" autocomplete="off" spellcheck="false">
     </div>
     <div class="server-list" id="serverList">
       <div class="loading">加载中...</div>
@@ -520,7 +560,7 @@
 
   <div class="detail-view" id="detailView">
     <div class="detail-header">
-      <img id="detailImg" src="">
+      <img id="detailImg" alt="" width="307" height="173" decoding="async">
       <div class="info">
         <h1 id="detailName" style="cursor:pointer" title="点击复制" onclick="copyText('detailName')"></h1>
         <div class="meta">
@@ -532,7 +572,7 @@
     </div>
     <div class="detail-desc" id="detailDesc"></div>
     <div class="detail-actions">
-      <button class="back-btn" id="backBtn" onclick="location.hash='#/servers/'">← 返回列表</button>
+      <button class="back-btn" id="backBtn" onclick="goBackToList()">← 返回列表</button>
       <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制编码</button>
       <button class="push-btn disabled" id="pushBtn" onclick="pushToClient()">推送到客户端</button>
     </div>
@@ -540,29 +580,69 @@
 </div>
 
 <script>
-function updateBackButton() {
-  const btn = document.getElementById('backBtn');
-  const detailBack = document.getElementById('detailBackBtn');
-  if (window.innerWidth <= 768) {
-    btn.textContent = '<';
-  } else {
-    btn.textContent = '< 返回列表';
-  }
+/* ============================ 通用工具 ============================ */
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+  });
 }
 
-function showDetailBackBtn() {
-  const detailBack = document.getElementById('detailBackBtn');
-  if (window.innerWidth <= 768) {
-    detailBack.style.display = 'block';
+// 图片统一是 AVIF。servers.json 里的地址可能还是 .png / .jpg（历史数据或被重新生成），
+// 这里把后缀归一化成 .avif，保证指向仓库里真正存在的文件。
+function toAvif(url) {
+  return String(url).replace(/\.(png|jpe?g|webp)(?=$|[?#])/i, '.avif');
+}
+// 只有仓库内的图片才把后缀换掉；外部图片（如网易 CDN）原样使用
+function cdnUrl(url) {
+  return /@main\/servers\/images\//.test(url) ? toAvif(url) : url;
+}
+function localImage(url) {
+  if (!url) return '';
+  const m = /@main\/servers\/(.+)$/.exec(url);
+  if (!m) return url;
+  const path = toAvif(m[1]);
+  // 数据里有几条形如 .../images/.png 的空文件名，当成「没有图片」处理，避免白发请求
+  const base = path.slice(path.lastIndexOf('/') + 1);
+  return base && base.charAt(0) !== '.' ? path : '';
+}
+window.imgFallback = function (img) {
+  const cdn = img.getAttribute('data-cdn');
+  // 第一次失败：本地文件缺失时换 jsDelivr 上的同一张图
+  if (img.dataset.fallback !== '1' && cdn && cdn !== img.src) {
+    img.dataset.fallback = '1';
+    img.src = cdn;
+    return;
   }
+  // 第二次还失败：多半是浏览器不支持 AVIF，退化成首字母色块，不留破图
+  img.dataset.fallback = '2';
+  const tile = document.createElement('div');
+  tile.className = 'no-img';
+  tile.setAttribute('aria-hidden', 'true');
+  tile.textContent = img.getAttribute('data-initial') || '?';
+  if (img.parentNode) img.parentNode.replaceChild(tile, img);
+};
+
+// 复制到剪贴板：https 用 Clipboard API，非安全上下文降级到 execCommand
+function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function (resolve, reject) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    ok ? resolve() : reject(new Error('copy failed'));
+  });
 }
 
-function hideDetailBackBtn() {
-  const detailBack = document.getElementById('detailBackBtn');
-  detailBack.style.display = 'none';
-}
-window.addEventListener('resize', updateBackButton);
-window.addEventListener('load', updateBackButton);
 
 function closeSidebar() {
   const sidebar = document.getElementById('sidebar');
@@ -592,6 +672,12 @@ const DATA_FILE = 'servers.json';
 let allServers = [];
 let currentListType = 'servers';
 let currentDetail = null;
+let detailFrom = 'servers'; // 从哪个列表进来的，返回时回到对应分类
+
+// 详情页返回列表：回到进来的那个分类
+function goBackToList() {
+  location.hash = detailFrom === 'rental' ? '#/rental/' : '#/servers/';
+}
 
 // 主题切换
 function toggleTheme() {
@@ -626,18 +712,19 @@ async function loadServers() {
     allServers = data.data || [];
     renderList('');
   } catch (e) {
-    list.innerHTML = '<div class="loading">加载失败: ' + e.message + '</div>';
+    list.innerHTML = '<div class="loading">加载失败：' + esc(e.message) +
+      '（若用 file:// 直接打开会被浏览器拦截，请通过线上地址访问）</div>';
   }
 }
 
 function renderList(filter) {
   const list = document.getElementById('serverList');
-  let filtered = currentListType === 'rental'
-    ? allServers.filter(s => s.isRental === true)
-    : allServers.filter(s => s.isRental !== true);
-  if (filter) {
-    const q = filter.trim();
-    filtered = allServers.filter(s => {
+  const q = String(filter || '').trim();
+  // 先在「服务器 / 租赁服」当前分类里取，再在结果里搜索（以前搜索会跨分类）
+  const pool = allServers.filter(s => currentListType === 'rental' ? s.isRental === true : s.isRental !== true);
+  let filtered = pool;
+  if (q) {
+    filtered = pool.filter(s => {
       if (q.startsWith('@')) {
         // @N → 按序号搜索
         return String(s.index) === q.substring(1);
@@ -648,29 +735,33 @@ function renderList(filter) {
       }
       if (q.includes('.')) {
         // 含点 → 按版本搜索
-        return (s.version || '').includes(q);
+        return String(s.version || '').includes(q);
       }
       // 其他 → 按名称搜索
-      return (s.name || '').toLowerCase().includes(q.toLowerCase());
+      return String(s.name || '').toLowerCase().includes(q.toLowerCase());
     });
   }
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="loading">暂无服务器</div>';
+    list.innerHTML = '<div class="loading">没有匹配的服务器</div>';
     return;
   }
-  list.innerHTML = filtered.map(s => `
-    <div class="server-card" onclick="showDetail('${s.entityId}')">
-      ${s.titleImageUrl
-        ? `<img src="${s.titleImageUrl}" onerror="this.parentElement.classList.add('no-img')">`
-        : `<div class="no-img">${(s.name || '?').charAt(0)}</div>`}
+  list.innerHTML = filtered.map(s => {
+    const file = localImage(s.titleImageUrl);
+    const version = s.version === '100.0.0' ? '基岩版' : (s.version || '未知版本');
+    const media = file
+      ? `<img src="${esc(file)}" data-cdn="${esc(cdnUrl(s.titleImageUrl))}" data-initial="${esc((s.name || '?').charAt(0))}" alt="" width="300" height="170" loading="lazy" decoding="async" onerror="imgFallback(this)">`
+      : `<div class="no-img" aria-hidden="true">${esc((s.name || '?').charAt(0))}</div>`;
+    return `<div class="server-card" role="button" tabindex="0" data-id="${esc(s.entityId)}">
+      ${media}
       <div class="info">
-        <h3>${s.name || '未命名'}</h3>
+        <h3>${esc(s.name || '未命名')}</h3>
         <div class="meta">
-          <span>${s.version === '100.0.0' ? '基岩版' : (s.version || '')}</span>
+          <span>${esc(version)}</span>
+          <span>#${esc(s.index)}</span>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function showDetail(id) {
@@ -681,19 +772,39 @@ function renderDetail(id) {
   document.getElementById('homeView').classList.remove('show');
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.add('show');
-  showDetailBackBtn();
-  document.getElementById('navServers').classList.add('active');
   const d = allServers.find(s => String(s.entityId) === String(id));
   if (!d) {
-    document.getElementById('detailDesc').textContent = '未找到服务器';
+    // 数据还在加载：先占位，loadServers 完成后会重新路由一次
+    const loaded = allServers.length > 0;
+    currentDetail = null;
+    document.getElementById('detailDesc').textContent = loaded ? '未找到服务器' : '加载中…';
+    ['detailName', 'detailVersion', 'detailAddr', 'detailEntityId'].forEach(function (key) {
+      document.getElementById(key).textContent = loaded ? '—' : '';
+    });
     return;
   }
+  const isRental = d.isRental === true;
+  detailFrom = isRental ? 'rental' : 'servers';
+  document.getElementById('navServers').classList.toggle('active', !isRental);
+  document.getElementById('navRental').classList.toggle('active', isRental);
   currentDetail = d;
   const detailImg = document.getElementById('detailImg');
-  if (d.titleImageUrl) {
-    detailImg.src = d.titleImageUrl;
+  const imgSrc = localImage(d.titleImageUrl);
+  if (imgSrc) {
+    detailImg.dataset.fallback = '';
+    detailImg.onerror = function () {
+      if (detailImg.dataset.fallback !== '1') {
+        detailImg.dataset.fallback = '1';
+        detailImg.src = cdnUrl(d.titleImageUrl);
+        return;
+      }
+      // 连 CDN 也拿不到（或浏览器不支持 AVIF）：收起来，不留破图
+      detailImg.style.display = 'none';
+    };
+    detailImg.src = imgSrc;
     detailImg.style.display = '';
   } else {
+    detailImg.removeAttribute('src');
     detailImg.style.display = 'none';
   }
   document.getElementById('detailName').textContent = d.name || '未命名';
@@ -704,7 +815,7 @@ function renderDetail(id) {
   let desc = (d.detailDescription || d.briefSummary || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
   document.getElementById('detailDesc').textContent = desc || '暂无简介';
   const copyBtn = document.getElementById('copyBtn');
-  const version = d.version || '';
+  const version = String(d.version || '');
   let btnText = '复制编码';
   let isBlocked = false;
   const entityId = String(d.entityId || '');
@@ -742,18 +853,25 @@ function renderDetail(id) {
   }
 }
 
-// 检测客户端是否运行
+// 检测客户端是否运行（1.5 秒没响应就当没开，避免按钮一直悬着）
 let clientOnline = false;
 function checkClient() {
   const pushBtn = document.getElementById('pushBtn');
-  fetch('http://localhost:25566/ping')
-    .then(r => r.text())
+  const ctrl = window.AbortController ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 1500) : null;
+  fetch('http://localhost:25566/ping', ctrl ? { signal: ctrl.signal } : undefined)
+    .then(r => {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.text();
+    })
     .then(() => {
+      if (timer) clearTimeout(timer);
       clientOnline = true;
       pushBtn.classList.remove('disabled');
       pushBtn.textContent = '推送到客户端';
     })
     .catch(() => {
+      if (timer) clearTimeout(timer);
       clientOnline = false;
       pushBtn.classList.add('disabled');
       pushBtn.textContent = '客户端未运行';
@@ -788,7 +906,6 @@ function renderHome() {
   document.getElementById('homeView').classList.add('show');
   document.getElementById('listView').style.display = 'none';
   document.getElementById('detailView').classList.remove('show');
-  hideDetailBackBtn();
   document.getElementById('navServers').classList.remove('active');
   document.getElementById('navRental').classList.remove('active');
 }
@@ -797,7 +914,6 @@ function renderServersList() {
   document.getElementById('homeView').classList.remove('show');
   document.getElementById('listView').style.display = 'flex';
   document.getElementById('detailView').classList.remove('show');
-  hideDetailBackBtn();
   document.getElementById('navServers').classList.toggle('active', currentListType === 'servers');
   document.getElementById('navRental').classList.toggle('active', currentListType === 'rental');
   renderList(document.getElementById('searchInput').value);
@@ -828,9 +944,9 @@ window.addEventListener('hashchange', handleRoute);
 function copyText(elementId) {
   const text = document.getElementById(elementId).textContent;
   if (!text || text === '暂无') return;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('已复制到剪贴板');
-  });
+  copyToClipboard(text)
+    .then(() => showToast('已复制到剪贴板'))
+    .catch(() => showToast('复制失败，请长按选中后手动复制'));
 }
 
 function showToast(msg) {
@@ -851,15 +967,36 @@ function copyCode() {
   const btn = document.getElementById('copyBtn');
   if (btn.disabled) return;
   const code = '@' + (currentDetail.index || '');
-  navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = '已复制';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = '复制编码';
-      btn.classList.remove('copied');
-    }, 2000);
-  });
+  copyToClipboard(code)
+    .then(() => {
+      btn.textContent = '已复制';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '复制编码';
+        btn.classList.remove('copied');
+      }, 2000);
+    })
+    .catch(() => showToast('复制失败，请手动复制'));
 }
+
+// ============================ 启动 ============================
+// 列表卡片：事件委托，点击或键盘 Enter / 空格打开详情
+const serverListEl = document.getElementById('serverList');
+function cardFromEvent(e) {
+  const target = e.target;
+  return target && target.closest ? target.closest('.server-card') : null;
+}
+serverListEl.addEventListener('click', e => {
+  const card = cardFromEvent(e);
+  if (card) showDetail(card.getAttribute('data-id'));
+});
+serverListEl.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = cardFromEvent(e);
+  if (!card) return;
+  e.preventDefault();
+  showDetail(card.getAttribute('data-id'));
+});
 
 document.getElementById('searchInput').addEventListener('input', e => renderList(e.target.value));
 handleRoute();

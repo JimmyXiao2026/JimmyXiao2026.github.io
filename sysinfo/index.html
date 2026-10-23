@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>设备信息检测器</title>
+<title>设备信息检测器 · JimmyXiao</title>
+<meta name="description" content="用浏览器开放接口检测 UA、CPU 架构、WebGL / WebGPU、屏幕、电池、网络与音视频设备，并检查广告拦截与隐私设置。">
+<meta name="theme-color" content="#070a13">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://jimmyxiao2026.github.io/sysinfo/">
 <link rel="icon" href="data:,">
 <style>
 :root {
@@ -77,6 +81,17 @@ h1 {
     color: var(--text-secondary);
     font-size: 14.5px;
     line-height: 1.6;
+}
+.back-home {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+.back-home:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
 }
 .glass-card {
     background: var(--glass);
@@ -170,6 +185,7 @@ tr:hover {
 <body>
 <div class="container">
     <header>
+        <a class="back-home" href="/">← 返回个人主页</a>
         <h1>设备信息检测器</h1>
         <p class="desc">仅读取Web标准开放信息；网页无法读取MAC、硬盘序列号、显卡温度、功耗等底层硬件数据</p>
     </header>
@@ -224,7 +240,8 @@ tr:hover {
         <section class="glass-card">
             <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
             <div id="privacyBox"></div>
-            <div id="ad-bait" class="ad-unit advertisement ads" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+            <!-- EasyList 经典cosmetic诱饵class组合 -->
+            <div class="ad-unit ad-box adsbox banner_ad" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
         </section>
         <section class="glass-card">
             <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
@@ -399,7 +416,6 @@ const boxes = [
     document.getElementById('netBox'),
     document.getElementById('screenBox'),
     document.getElementById('batteryBox')
-    // mediaBox 移除，初始化不写检测中
 ];
 boxes[0].innerHTML = `<p class="status-warn">检测中...</p>`;
 boxes[1].innerHTML = `<p class="status-warn">解析UA中...</p>`;
@@ -420,31 +436,62 @@ function setTimeoutAll() {
 setTimeoutAll();
 }
 
-function startAdDetect(){
+async function startAdDetect(){
     const box = document.getElementById("privacyBox");
-    const bait = document.getElementById("ad-bait");
-    let adBlockDetected = false;
-    const check = (cnt = 0) => {
-        const st = getComputedStyle(bait);
-        if(st.display === "none" || st.visibility === "hidden" || st.opacity === "0"){
-            adBlockDetected = true;
-        }
-        if(cnt >= 5){
-            if(isTimeout) return;
-            const dnt = navigator.doNotTrack;
-            let dntText = "未开启";
-            if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
-            const rows = [
-                ["JavaScript状态", "✅ 已启用"],
-                ["Do Not Track(DNT)", dntText],
-                ["广告拦截检测", adBlockDetected ? "✅ 检测到广告拦截器" : "❌ 未检测到广告拦截（仅参考）"]
-            ];
-            box.innerHTML = makeTable(rows);
-            return;
-        }
-        setTimeout(()=>check(cnt+1), 80);
+    const bait = document.querySelector(".ad-unit");
+    let domBlocked = false;
+    let fetchBlocked = false;
+    let hitReason = [];
+
+    // DOM诱饵检测（cosmetic CSS隐藏，保留）
+    await new Promise(r=>setTimeout(r,150));
+    if(bait.offsetHeight === 0) {
+        domBlocked = true;
+        hitReason.push("DOM诱饵被CSS隐藏");
     }
-    check();
+
+    // HEAD探针，不用script标签，避开IDM劫持
+    const probeUrls = [
+        "https://ad.doubleclick.net/ddm/trackimp",
+        "https://www.googleadservices.com/pagead/conversion_async.js"
+    ];
+    const probePromises = probeUrls.map(src => {
+        return new Promise(resolve => {
+            const ctl = new AbortController();
+            const t = setTimeout(()=>ctl.abort(),1200);
+            fetch(src, {
+                method: "HEAD",
+                mode: "no-cors",
+                signal: ctl.signal
+            })
+            .then(r => {
+                clearTimeout(t);
+                resolve(false);
+            })
+            .catch(() => {
+                clearTimeout(t);
+                resolve(true);
+            });
+        });
+    });
+    const results = await Promise.all(probePromises);
+    if(results.some(v=>v)) {
+        fetchBlocked = true;
+        hitReason.push("广告探针请求被阻断（超时/拒绝）");
+    }
+
+    const adBlockDetected = domBlocked || fetchBlocked;
+
+    if(isTimeout) return;
+    const dnt = navigator.doNotTrack;
+    let dntText = "未开启";
+    if(dnt === "1" || dnt === 1) dntText = "✅ 已开启DNT";
+    const rows = [
+        ["JavaScript状态", "✅ 已启用"],
+        ["Do Not Track(DNT)", dntText],
+        ["广告拦截检测", adBlockDetected ? `✅ 检测到广告拦截器（命中：${hitReason.join("、")}）` : "❌ 未检测到广告拦截（仅参考）"]
+    ];
+    box.innerHTML = makeTable(rows);
 }
 
 let serverUA = "⏳ 自动请求中...";

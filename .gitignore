@@ -1,2 +1,13 @@
 push.bat
 临时文件/
+
+# 系统 / 编辑器垃圾文件
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
+*.log
+*.bak
+.vscode/
+.idea/
+node_modules/

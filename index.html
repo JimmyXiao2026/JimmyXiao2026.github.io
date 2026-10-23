@@ -3,104 +3,108 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>JimmyXiao的个人首页</title>
+<title>JimmyXiao · 全栈开发者个人主页</title>
+<meta name="description" content="JimmyXiao 的个人主页：常用软件下载、Exbox（Minecraft 服务器列表与编码查询）、链接加长器、设备信息检测、IP 查询等自建小工具，以及 GitHub 开源项目。" />
+<meta name="author" content="JimmyXiao" />
+<meta name="theme-color" content="#05060e" />
+<link rel="canonical" href="https://jimmyxiao2026.github.io/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="JimmyXiao" />
+<meta property="og:url" content="https://jimmyxiao2026.github.io/" />
+<meta property="og:title" content="JimmyXiao · 全栈开发者个人主页" />
+<meta property="og:description" content="常用软件下载、Exbox 服务器查询、链接加长器、设备信息检测、IP 查询等自建小工具，以及 GitHub 开源项目。" />
+<meta property="og:locale" content="zh_CN" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="JimmyXiao · 全栈开发者个人主页" />
+<meta name="twitter:description" content="常用软件下载、Exbox 服务器查询、链接加长器、设备信息检测、IP 查询等自建小工具。" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b7cf8'/%3E%3Cstop offset='1' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230a0e1a'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='url(%23g)' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='url(%23g)'/%3E%3C/svg%3E" />
+
+<!-- 字体：Sora 用于标题，Noto Sans SC 用于正文；加载失败时回退到系统字体 -->
+<link rel="preconnect" href="https://miaoda.feishu.cn" crossorigin />
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" />
+<link rel="stylesheet" href="assets/theme.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "JimmyXiao",
+  "url": "https://jimmyxiao2026.github.io/",
+  "email": "mailto:JimmyXiao2012@126.com",
+  "jobTitle": "全栈开发者",
+  "sameAs": [
+    "https://github.com/JimmyXiao2026",
+    "https://gitcode.com/JimmyXiao2026/"
+  ]
+}
+</script>
+
 <style>
-  /* ============ Tokens ============ */
-  :root {
-    --bg: #05060e;
-    --glass: rgba(255, 255, 255, 0.045);
-    --glass-strong: rgba(255, 255, 255, 0.08);
-    --stroke: rgba(255, 255, 255, 0.09);
-    --stroke-strong: rgba(255, 255, 255, 0.16);
-    --text: #e8ecf8;
-    --text-dim: #9aa3bd;
-    --text-faint: #6b7390;
-    --accent: #8b7cf8;
-    --accent-2: #38bdf8;
-    --accent-3: #22d3ee;
-    --radius-lg: 28px;
-    --radius-md: 18px;
-    --radius-pill: 999px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.6;
-  }
-
-  .font-display { font-family: "Sora", "Noto Sans SC", system-ui, sans-serif; }
-
-  /* ============ Ambient background ============ */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139, 124, 248, 0.12), transparent 60%),
-      var(--bg);
-  }
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.55;
-    will-change: transform;
-  }
-  .blob-1 {
-    width: 520px; height: 520px;
-    right: -120px; top: 8%;
-    background: radial-gradient(circle, #7c3aed 0%, #4f46e5 60%, transparent 75%);
-    animation: drift1 18s ease-in-out infinite alternate;
-  }
-  .blob-2 {
-    width: 420px; height: 420px;
-    left: -140px; top: 40%;
-    background: radial-gradient(circle, #0ea5e9 0%, #2563eb 60%, transparent 75%);
-    opacity: 0.35;
-    animation: drift2 22s ease-in-out infinite alternate;
-  }
-  .blob-3 {
-    width: 380px; height: 380px;
-    left: 30%; bottom: -160px;
-    background: radial-gradient(circle, #22d3ee 0%, #0891b2 60%, transparent 75%);
-    opacity: 0.28;
-    animation: drift3 26s ease-in-out infinite alternate;
-  }
-  @keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-60px, 40px) scale(1.15); } }
-  @keyframes drift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(50px, -50px) scale(1.1); } }
-  @keyframes drift3 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-40px, -30px) scale(1.2); } }
-
-  /* subtle noise */
-  .bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-  }
-
   /* ============ Layout ============ */
   .wrap {
     max-width: 920px;
     margin: 0 auto;
-    padding: 56px 24px 80px;
+    padding: 0 24px 80px;
   }
+
+  /* ============ Top bar ============ */
+  .topbar {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 22px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "Sora", "Noto Sans SC", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .brand-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 12px rgba(139, 124, 248, 0.75);
+  }
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .topnav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+  .topnav a:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--stroke);
+  }
+  .topnav a svg { width: 16px; height: 16px; }
+  .topnav .icon-link { padding: 8px; }
 
   /* ============ Hero card ============ */
   .hero {
     position: relative;
+    margin-top: 26px;
     background: var(--glass);
     border: 1px solid var(--stroke);
     border-radius: var(--radius-lg);
@@ -113,22 +117,24 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
   .hero::before {
-    /* top sheen */
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%);
     pointer-events: none;
   }
 
   .avatar {
-    width: 128px; height: 128px;
+    width: 128px;
+    height: 128px;
     margin: 0 auto 24px;
     border-radius: 50%;
-    background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02));
     border: 1px solid var(--stroke-strong);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow:
       0 0 0 8px rgba(139, 124, 248, 0.08),
       0 12px 32px rgba(0, 0, 0, 0.4);
@@ -163,38 +169,21 @@
   }
   .tagline .code { color: var(--accent-2); font-weight: 600; }
 
+  .intro {
+    max-width: 560px;
+    margin: 18px auto 0;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
   .actions {
-    margin-top: 36px;
+    margin-top: 34px;
     display: flex;
     gap: 14px;
     justify-content: center;
     flex-wrap: wrap;
   }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 13px 26px;
-    border-radius: var(--radius-pill);
-    background: var(--glass-strong);
-    border: 1px solid var(--stroke);
-    color: var(--text);
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-  .btn svg { width: 18px; height: 18px; }
-  .btn:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.13);
-    border-color: var(--stroke-strong);
-    box-shadow: 0 10px 28px rgba(139, 124, 248, 0.22);
-  }
-  .btn:active { transform: translateY(0); }
 
   /* ============ Section title ============ */
   .section-head {
@@ -204,11 +193,15 @@
     margin: 56px 4px 22px;
   }
   .section-head .icon {
-    width: 34px; height: 34px;
+    width: 34px;
+    height: 34px;
+    flex: none;
     border-radius: 10px;
     background: rgba(139, 124, 248, 0.15);
     border: 1px solid rgba(139, 124, 248, 0.3);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--accent);
   }
   .section-head .icon svg { width: 18px; height: 18px; }
@@ -218,24 +211,26 @@
     font-weight: 700;
     letter-spacing: -0.01em;
   }
+  .section-note {
+    margin-left: auto;
+    color: var(--text-faint);
+    font-size: 0.82rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  a.section-note:hover { color: var(--accent-2); }
 
-  /* ============ Projects grid ============ */
-  .projects {
+  /* ============ Cards grid ============ */
+  .grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
   }
-  .repo-error {
+  /* 工具是奇数个，最后一张铺满整行 */
+  .grid.fill-last > .card:last-child:nth-child(odd) {
     grid-column: 1 / -1;
-    padding: 26px;
-    border-radius: var(--radius-md);
-    background: var(--glass);
-    border: 1px solid var(--stroke);
-    color: var(--text-dim);
-    text-align: center;
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
   }
+
   .card {
     position: relative;
     padding: 26px;
@@ -254,9 +249,11 @@
   .card::before {
     content: "";
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
   }
   .card:hover {
     transform: translateY(-5px);
@@ -270,10 +267,13 @@
     margin-bottom: 16px;
   }
   .card-icon {
-    width: 46px; height: 46px;
+    width: 46px;
+    height: 46px;
     border-radius: 13px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--stroke);
   }
   .card-icon svg { width: 24px; height: 24px; }
@@ -291,6 +291,7 @@
     font-weight: 700;
     margin-bottom: 8px;
     letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
   }
   .card p {
     color: var(--text-dim);
@@ -303,72 +304,95 @@
     font-size: 0.75rem;
     padding: 4px 11px;
     border-radius: var(--radius-pill);
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--stroke);
     color: var(--text-dim);
   }
 
+  /* ============ Repo list states ============ */
+  .repo-placeholder {
+    grid-column: 1 / -1;
+    padding: 30px;
+    border-radius: var(--radius-md);
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    color: var(--text-dim);
+    text-align: center;
+    font-size: 0.92rem;
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+  .repo-placeholder a {
+    color: var(--accent-2);
+    text-decoration: none;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .repo-placeholder a:hover { text-decoration: underline; }
+  .repo-placeholder .spinner {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-right: 8px;
+    vertical-align: -1px;
+    border: 2px solid var(--stroke-strong);
+    border-top-color: var(--accent-2);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   /* ============ Footer ============ */
-  footer {
+  .site-footer {
     margin-top: 64px;
     text-align: center;
     color: var(--text-faint);
     font-size: 0.85rem;
   }
-  footer .dot { margin: 0 8px; opacity: 0.5; }
-
-  /* ============ Reveal animation ============ */
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 14px;
   }
-  .reveal.in { opacity: 1; transform: translateY(0); }
-
-  /* ============ Toast ============ */
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 32px;
-    transform: translateX(-50%) translateY(20px);
-    padding: 12px 22px;
-    border-radius: var(--radius-pill);
-    background: rgba(20, 22, 38, 0.85);
-    border: 1px solid var(--stroke-strong);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    color: var(--text);
-    font-size: 0.9rem;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    z-index: 99;
+  .footer-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .footer-links a:hover { color: var(--accent-2); }
+  .site-footer p { line-height: 1.8; }
 
   /* ============ Responsive ============ */
   @media (max-width: 720px) {
-    .wrap { padding: 28px 16px 60px; }
+    .wrap { padding: 0 16px 60px; }
+    .topbar { padding: 16px 16px 0; }
     .hero { padding: 44px 22px 36px; border-radius: 22px; }
     .avatar { width: 104px; height: 104px; }
     .avatar svg { width: 58px; height: 58px; }
-    .projects { grid-template-columns: 1fr; gap: 14px; }
+    .grid { grid-template-columns: 1fr; gap: 14px; }
     .actions { gap: 10px; }
     .btn { padding: 11px 20px; font-size: 0.9rem; }
     .section-head { margin: 44px 2px 18px; }
-    .tag { font-size: 0.82rem; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation: none !important;
-      transition: none !important;
-    }
-    .reveal { opacity: 1; transform: none; }
+    .section-note { display: none; }
+    .tag { font-size: 0.78rem; }
+    .card { padding: 22px; }
   }
 </style>
+<noscript>
+  <style>
+    /* 关掉 JS 时不要让内容停在 opacity:0 */
+    .reveal { opacity: 1 !important; transform: none !important; }
+    /* 仓库列表靠 JS 拉取，关了 JS 就别显示一个永远转的占位 */
+    #repo-list { display: none; }
+  </style>
+</noscript>
 </head>
 <body>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
 
 <!-- Ambient background -->
 <div class="bg" aria-hidden="true">
@@ -377,18 +401,26 @@
   <div class="blob blob-3"></div>
 </div>
 
-<main class="wrap">
+<header class="topbar">
+  <a class="brand" href="./"><span class="brand-dot" aria-hidden="true"></span>JimmyXiao</a>
+  <nav class="topnav" aria-label="站点导航">
+    <a href="#tools">工具</a>
+    <a href="#repos">项目</a>
+    <a class="icon-link" href="https://github.com/JimmyXiao2026" target="_blank" rel="noopener" aria-label="GitHub 主页">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+    </a>
+  </nav>
+</header>
 
-  <!-- ===== Hero card ===== -->
+<main class="wrap" id="main">
+
+  <!-- ===== Hero ===== -->
   <section class="hero reveal">
     <div class="avatar">
-      <!-- Astronaut icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="10" r="5"/>
-        <path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/>
-        <path d="M10 9.5h.01M14 9.5h.01"/>
-        <circle cx="12" cy="10" r="5"/>
-        <path d="M9.5 13c.8.7 4.2.7 5 0"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.1" fill="#a5b4fc" stroke="none" />
+        <ellipse cx="12" cy="12" rx="9.2" ry="4.1" transform="rotate(-28 12 12)" />
+        <ellipse cx="12" cy="12" rx="9.2" ry="4.1" transform="rotate(28 12 12)" opacity="0.55" />
       </svg>
     </div>
 
@@ -399,220 +431,326 @@
       <span>全栈 · 创意开发者</span>
     </div>
 
+    <p class="intro">写代码、折腾服务器，顺手做一些小而实用的网页工具。下面这些都是在跑的，点开就能用。</p>
+
     <div class="actions">
       <a class="btn" href="https://github.com/JimmyXiao2026" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
         GitHub
       </a>
       <a class="btn" href="https://gitcode.com/JimmyXiao2026/" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="6" cy="6" r="2.5"/>
-          <circle cx="6" cy="18" r="2.5"/>
-          <circle cx="18" cy="12" r="2.5"/>
-          <path d="M8.2 7.2l7.6 3.6M8.2 16.8l7.6-3.6"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="6" cy="6" r="2.5" />
+          <circle cx="6" cy="18" r="2.5" />
+          <circle cx="18" cy="12" r="2.5" />
+          <path d="M8.2 7.2l7.6 3.6M8.2 16.8l7.6-3.6" />
         </svg>
         GitCode
       </a>
       <a class="btn" href="mailto:JimmyXiao2012@126.com">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 2 11 13"/>
-          <path d="M22 2 15 22l-4-9-9-4 20-7z"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 2 11 13" />
+          <path d="M22 2 15 22l-4-9-9-4 20-7z" />
         </svg>
         联系
       </a>
     </div>
   </section>
 
-  <!-- ===== Projects ===== -->
+  <!-- ===== Tools ===== -->
   <div class="section-head reveal">
-    <span class="icon">
+    <span class="icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
-        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
       </svg>
     </span>
-    <h2 class="font-display">精选项目</h2>
+    <h2 class="font-display" id="tools">本站工具</h2>
+    <span class="section-note">纯静态 · 无需登录</span>
   </div>
 
-  <section class="projects" id="repo-list">
-    <a class="card reveal" href="#" data-toast="Nebula UI 演示页待配置">
+  <section class="grid fill-last" aria-labelledby="tools">
+    <a class="card reveal" href="convert/" target="_blank" rel="noopener">
       <div class="card-top">
         <span class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 4v13m0 0-3-3m3 3 3-3" />
+            <path d="M17 20V7m0 0-3 3m3-3 3 3" />
           </svg>
         </span>
-        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
       </div>
-      <h3>Nebula UI</h3>
-      <p>一套开源的玻璃拟态 React 组件库，聚焦暗色主题与细腻动效，让产品在第一眼就拥有记忆点。</p>
+      <h3>格式转换</h3>
+      <p>图片、视频、动图、音频、文档与 favicon 互转，支持裁切压缩。全部在浏览器本地完成，文件不上传。</p>
       <div class="tags">
-        <span class="tag">React</span>
-        <span class="tag">TypeScript</span>
-        <span class="tag">Tailwind</span>
+        <span class="tag">图片</span>
+        <span class="tag">视频</span>
+        <span class="tag">动图</span>
+        <span class="tag">音频</span>
+        <span class="tag">PDF</span>
       </div>
     </a>
 
-    <a class="card reveal" href="#" data-toast="Pulse Board 演示页待配置">
+    <a class="card reveal" href="apps/" target="_blank" rel="noopener">
       <div class="card-top">
         <span class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#8b7cf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3v18h18"/>
-            <path d="M7 15l4-6 4 3 5-8"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v11m0 0 4-4m-4 4-4-4" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
           </svg>
         </span>
-        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
       </div>
-      <h3>Pulse Board</h3>
-      <p>实时数据看板，通过 WebSocket 推送毫秒级指标流，为团队提供一眼可读的全局态势。</p>
+      <h3>应用下载</h3>
+      <p>常用软件的官方直链合集，按平台筛选，能自动跟随 GitHub 发布最新版。</p>
       <div class="tags">
-        <span class="tag">Next.js</span>
-        <span class="tag">WebSocket</span>
-        <span class="tag">ECharts</span>
+        <span class="tag">Windows</span>
+        <span class="tag">macOS</span>
+        <span class="tag">Linux</span>
+        <span class="tag">Android</span>
       </div>
     </a>
 
-    <a class="card reveal" href="#" data-toast="Aurora 演示页待配置">
+    <a class="card reveal" href="servers/" target="_blank" rel="noopener">
       <div class="card-top">
         <span class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.5 2a2.5 2.5 0 0 1 2.45 2h.1a2.5 2.5 0 0 1 2.45-2A2.5 2.5 0 0 1 17 4.5c0 .7-.28 1.32-.73 1.77l.02.03a2.5 2.5 0 0 1 0 3.54l-.02.03c.45.45.73 1.07.73 1.77A2.5 2.5 0 0 1 14.55 14 2.5 2.5 0 0 1 12.1 12h-.2a2.5 2.5 0 0 1-2.45 2 2.5 2.5 0 0 1-1.77-4.23l.02-.03a2.5 2.5 0 0 1 0-3.54l-.02-.03A2.5 2.5 0 0 1 7 4.5 2.5 2.5 0 0 1 9.5 2z"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8b7cf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="7" rx="2" />
+            <rect x="3" y="13" width="18" height="7" rx="2" />
+            <path d="M7 7.5h.01M7 16.5h.01" />
           </svg>
         </span>
-        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
       </div>
-      <h3>Aurora</h3>
-      <p>AI 写作助手，长文续写、风格迁移与结构化润色一体完成，本地优先的隐私设计。</p>
+      <h3>Exbox 服务器</h3>
+      <p>网易国服 Minecraft 服务器列表，支持按名称、编号、版本搜索，一键复制编码或推送到客户端。</p>
       <div class="tags">
-        <span class="tag">Python</span>
-        <span class="tag">FastAPI</span>
-        <span class="tag">Vue</span>
+        <span class="tag">Minecraft</span>
+        <span class="tag">服务器查询</span>
       </div>
     </a>
 
-    <a class="card reveal" href="#" data-toast="Drift 演示页待配置">
+    <a class="card reveal" href="longurl/" target="_blank" rel="noopener">
       <div class="card-top">
         <span class="card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="3"/>
-            <path d="M3 9h18M9 21V9"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.1 0l1.4-1.4a5 5 0 0 0-7.1-7.1L10 5.9" />
+            <path d="M14 11a5 5 0 0 0-7.1 0l-1.4 1.4a5 5 0 0 0 7.1 7.1L14 18.1" />
           </svg>
         </span>
-        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
       </div>
-      <h3>Drift Notes</h3>
-      <p>跨设备笔记应用，基于 CRDT 实现离线优先的多端同步，在飞机上也能流畅书写。</p>
+      <h3>链接加长器</h3>
+      <p>反着来的短链工具：把任意链接加长到你指定的精确长度，打开后仍会跳到目标地址。</p>
       <div class="tags">
-        <span class="tag">Electron</span>
-        <span class="tag">SQLite</span>
-        <span class="tag">CRDT</span>
+        <span class="tag">工具</span>
+        <span class="tag">中英双语</span>
+        <span class="tag">无追踪</span>
+      </div>
+    </a>
+
+    <a class="card reveal" href="sysinfo/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <span class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="13" rx="2" />
+            <path d="M8 21h8M12 17v4" />
+            <path d="M6 9h4M6 12h7" />
+          </svg>
+        </span>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
+      </div>
+      <h3>设备信息检测</h3>
+      <p>只读浏览器开放的接口，看看 UA、WebGL / WebGPU、屏幕、电池和音视频设备告诉网站什么。</p>
+      <div class="tags">
+        <span class="tag">隐私</span>
+        <span class="tag">Web API</span>
+      </div>
+    </a>
+
+    <a class="card reveal" href="ip/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <span class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" />
+            <path d="M2.5 12h19M12 2.5a15 15 0 0 1 4 9.5 15 15 0 0 1-4 9.5 15 15 0 0 1-4-9.5 15 15 0 0 1 4-9.5z" />
+          </svg>
+        </span>
+        <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>
+      </div>
+      <h3>IP 查询</h3>
+      <p>多个接口自动容错，打开就看到当前公网 IP，能拿到时一并显示归属地和运营商。</p>
+      <div class="tags">
+        <span class="tag">IP</span>
+        <span class="tag">归属地</span>
+        <span class="tag">多源容错</span>
       </div>
     </a>
   </section>
 
-  <footer class="reveal">
-    Copyright 2026 JimmyXiao. All Rights Reserved.
+  <!-- ===== GitHub repos ===== -->
+  <div class="section-head reveal">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+      </svg>
+    </span>
+    <h2 class="font-display" id="repos">GitHub 项目</h2>
+    <a class="section-note" href="https://github.com/JimmyXiao2026?tab=repositories" target="_blank" rel="noopener">全部仓库 →</a>
+  </div>
+
+  <section class="grid" id="repo-list" aria-live="polite" aria-busy="true">
+    <div class="repo-placeholder"><span class="spinner" aria-hidden="true"></span>正在从 GitHub 读取公开仓库…</div>
+  </section>
+
+  <footer class="site-footer reveal">
+    <nav class="footer-links" aria-label="全站导航">
+      <a href="convert/" target="_blank" rel="noopener">格式转换</a>
+      <a href="apps/" target="_blank" rel="noopener">应用下载</a>
+      <a href="servers/" target="_blank" rel="noopener">服务器列表</a>
+      <a href="longurl/" target="_blank" rel="noopener">链接加长器</a>
+      <a href="sysinfo/" target="_blank" rel="noopener">设备信息</a>
+      <a href="ip/" target="_blank" rel="noopener">IP 查询</a>
+    </nav>
+    <p>© <span id="year">2026</span> JimmyXiao · All Rights Reserved.</p>
+    <p>纯 HTML / CSS / JS · 托管于 GitHub Pages</p>
   </footer>
 
 </main>
 
-<!-- Toast -->
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-
 <script>
 (function () {
+  'use strict';
+
+  // 当前年份（写好静态值，JS 只做覆盖）
+  var yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
   // ===== Reveal on scroll =====
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-
-  // ===== Load GitHub repos (fallback: static cards stay) =====
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
+  var io = null;
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    // 老浏览器：直接显示，不做动画
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
   }
-  var repoList = document.getElementById('repo-list');
-  var LANG_COLOR = {
-    'HTML': '#e34f26', 'Java': '#b07219', 'Batchfile': '#c1f12e', 'Kotlin': '#a97bff',
-    'JavaScript': '#f1e05a', 'Python': '#3572A5', 'C': '#555555', 'C++': '#f34b7d',
-    'Shell': '#89e051', 'TypeScript': '#3178c6'
-  };
-  fetch('https://api.github.com/users/JimmyXiao2026/repos?sort=updated&per_page=50')
-    .then(function (r) {
-      if (!r.ok) throw new Error('http ' + r.status);
-      return r.json();
-    })
-    .then(function (list) {
-      if (!Array.isArray(list)) throw new Error('bad response');
-      var repos = list.filter(function (x) { return !x.fork && x.name !== 'JimmyXiao2026.github.io'; });
-      if (!repos.length) throw new Error('no repos');
-      var html = repos.map(function (x) {
-        var color = LANG_COLOR[x.language] || '#8b7cf8';
-        var desc = x.description || '暂无简介';
-        var date = (x.updated_at || '').slice(0, 10);
-        return '<a class="card reveal" href="' + esc(x.html_url) + '" target="_blank" rel="noopener">'
-          + '<div class="card-top">'
-          +   '<span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg></span>'
-          +   '<svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>'
-          + '</div>'
-          + '<h3>' + esc(x.name) + '</h3>'
-          + '<p>' + esc(desc) + '</p>'
-          + '<div class="tags">'
-          +   (x.language ? '<span class="tag" style="color:' + color + '">' + esc(x.language) + '</span>' : '')
-          +   '<span class="tag">★ ' + (x.stargazers_count || 0) + '</span>'
-          +   '<span class="tag">' + date + '</span>'
-          + '</div>'
-          + '</a>';
-      }).join('');
-      repoList.innerHTML = html;
-      var cards = repoList.querySelectorAll('.card.reveal');
-      for (var i = 0; i < cards.length; i++) io.observe(cards[i]);
-    })
-    .catch(function (e) {
-      var hint = (e && e.message === 'http 403') ? '（可能触发了 GitHub API 限速，稍后再试）' : '';
-      repoList.innerHTML = '<div class="repo-error" role="alert">项目列表加载失败，请稍后刷新重试。' + hint + '</div>';
-    });
 
-  // ===== Toast for placeholder buttons =====
-  var toast = document.getElementById('toast');
-  var toastTimer;
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
-  }
-  document.querySelectorAll('[data-toast]').forEach(function (el) {
-    el.addEventListener('click', function (e) {
-      e.preventDefault();
-      showToast(el.getAttribute('data-toast'));
-    });
-  });
-
-  // ===== Mouse parallax on blobs (desktop only, respect reduced motion) =====
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var blobs = document.querySelectorAll('.blob');
-  if (!reduced && window.matchMedia('(pointer: fine)').matches) {
+  // ===== Ambient blobs parallax (desktop only) =====
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var finePointer = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  if (!reduced && finePointer) {
+    var blobs = document.querySelectorAll('.blob');
     window.addEventListener('mousemove', function (ev) {
-      var x = (ev.clientX / window.innerWidth - 0.5);
-      var y = (ev.clientY / window.innerHeight - 0.5);
-      blobs.forEach(function (b, i) {
+      var x = ev.clientX / window.innerWidth - 0.5;
+      var y = ev.clientY / window.innerHeight - 0.5;
+      blobs.forEach(function (blob, i) {
         var depth = (i + 1) * 14;
-        b.style.translate = (x * depth) + 'px ' + (y * depth) + 'px';
+        blob.style.translate = (x * depth) + 'px ' + (y * depth) + 'px';
       });
     }, { passive: true });
   }
+
+  // ===== GitHub repos（失败时优雅降级，不影响上面的工具入口）=====
+  var repoList = document.getElementById('repo-list');
+  if (!repoList) return;
+
+  var API = 'https://api.github.com/users/JimmyXiao2026/repos?sort=updated&per_page=20';
+  var LANG_COLOR = {
+    HTML: '#e34f26', CSS: '#563d7c', Java: '#b07219', Batchfile: '#c1f12e',
+    Kotlin: '#a97bff', JavaScript: '#f1e05a', TypeScript: '#3178c6',
+    Python: '#3572A5', C: '#555555', 'C++': '#f34b7d', Shell: '#89e051',
+    Vue: '#41b883', Go: '#00ADD8', Rust: '#dea584'
+  };
+  var MAX_REPOS = 8;
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function showFallback(message) {
+    repoList.setAttribute('aria-busy', 'false');
+    repoList.innerHTML = '<div class="repo-placeholder">' + esc(message) +
+      '<a href="https://github.com/JimmyXiao2026?tab=repositories" target="_blank" rel="noopener">直接在 GitHub 查看 →</a></div>';
+  }
+
+  function renderRepos(repos) {
+    repoList.innerHTML = repos.map(function (repo) {
+      var color = LANG_COLOR[repo.language] || '#8b7cf8';
+      var updated = (repo.updated_at || '').slice(0, 10);
+      return '<a class="card reveal" href="' + esc(repo.html_url) + '" target="_blank" rel="noopener">' +
+        '<div class="card-top">' +
+          '<span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/>' +
+            '<path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>' +
+          '</svg></span>' +
+          '<svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>' +
+        '</div>' +
+        '<h3>' + esc(repo.name) + '</h3>' +
+        '<p>' + esc(repo.description || '暂无简介') + '</p>' +
+        '<div class="tags">' +
+          (repo.language ? '<span class="tag" style="color:' + color + '">' + esc(repo.language) + '</span>' : '') +
+          '<span class="tag">★ ' + Number(repo.stargazers_count || 0) + '</span>' +
+          (updated ? '<span class="tag">' + esc(updated) + '</span>' : '') +
+        '</div>' +
+      '</a>';
+    }).join('');
+    repoList.setAttribute('aria-busy', 'false');
+    if (io) {
+      repoList.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+    } else {
+      repoList.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+    }
+  }
+
+  // 8 秒拿不到就降级，避免占位一直转
+  var controller = window.AbortController ? new AbortController() : null;
+  var timer = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+
+  fetch(API, controller ? { signal: controller.signal } : undefined)
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (list) {
+      if (timer) clearTimeout(timer);
+      if (!Array.isArray(list)) throw new Error('bad payload');
+      var repos = list.filter(function (repo) {
+        return !repo.fork && repo.name !== 'JimmyXiao2026.github.io';
+      }).slice(0, MAX_REPOS);
+      if (!repos.length) throw new Error('no repos');
+      renderRepos(repos);
+    })
+    .catch(function (err) {
+      if (timer) clearTimeout(timer);
+      showFallback(err && err.name === 'AbortError'
+        ? '读取 GitHub 项目超时了，'
+        : '暂时没能读取 GitHub 项目列表（可能是网络受限或 API 限速），');
+    });
+
+  // 标记主脚本跑完了，给下面的兜底判断用
+  window.__pageReady = true;
 })();
+</script>
+
+<!-- 兜底：主脚本若报错，3 秒后把内容全部显示出来，避免整页空白 -->
+<script>
+window.setTimeout(function () {
+  if (window.__pageReady) return;
+  var els = document.querySelectorAll('.reveal');
+  for (var i = 0; i < els.length; i++) els[i].classList.add('in');
+}, 3000);
 </script>
 
 </body>

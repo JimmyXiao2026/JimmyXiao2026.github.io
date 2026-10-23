@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>格式转换 · 图片 / 视频 / 动图 / 音频 / 文档 · JimmyXiao</title>
+<meta name="description" content="纯浏览器本地运行的格式转换工具：图片压缩裁切、视频转码（含 AV1）、视频与动图（GIF / APNG）互转、音频裁剪与 MP3/WAV 导出、文档与 PDF 互转、图片转 favicon.ico。文件不上传，全部在本机处理。" />
+<meta name="theme-color" content="#05060e" />
+<link rel="canonical" href="https://jimmyxiao2026.github.io/convert/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://jimmyxiao2026.github.io/convert/" />
+<meta property="og:title" content="格式转换 · 图片 / 视频 / 音频 / 文档" />
+<meta property="og:description" content="纯浏览器本地完成的格式转换：图片、视频、音频、文档 / PDF、favicon。" />
+<meta property="og:locale" content="zh_CN" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0e1a'/%3E%3Cpath d='M9 20h14M9 12h14' stroke='%2338bdf8' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M13 7l-4 5 4 5M19 15l4 5-4 5' stroke='%238b7cf8' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://miaoda.feishu.cn" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" />
+<link rel="stylesheet" href="../assets/theme.css" />
+
+<style>
+  /* hidden 属性要能压过下面这些 display:flex/grid 的类 */
+  [hidden] { display: none !important; }
+
+  .page { max-width: 1000px; margin: 0 auto; padding: 0 24px 88px; }
+
+  /* ---------- 顶栏 ---------- */
+  .bar {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 22px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .bar .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    text-decoration: none;
+    padding: 7px 13px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--stroke);
+    background: var(--glass);
+    transition: color .2s, border-color .2s;
+  }
+  .bar .back:hover { color: var(--text); border-color: var(--stroke-strong); }
+  .bar h1 {
+    font-family: "Sora", "Noto Sans SC", system-ui, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .bar .badge {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: var(--accent-3);
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(34, 211, 238, .28);
+    background: rgba(34, 211, 238, .08);
+  }
+  .bar .badge::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  /* ---------- 标签 ---------- */
+  .tabs {
+    max-width: 1000px;
+    margin: 20px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--stroke);
+    background: var(--glass);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .2s, background .2s, border-color .2s, transform .2s;
+  }
+  .tab:hover { color: var(--text); border-color: var(--stroke-strong); }
+  .tab[aria-selected="true"] {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(135deg, rgba(139,124,248,.9), rgba(56,189,248,.85));
+    box-shadow: 0 8px 22px rgba(139,124,248,.3);
+  }
+  .tab svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 6px; }
+
+  /* ---------- 面板 ---------- */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .card {
+    position: relative;
+    margin-top: 18px;
+    padding: 22px;
+    border-radius: var(--radius-md);
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .card-head h2 {
+    font-family: "Sora", "Noto Sans SC", system-ui, sans-serif;
+    font-size: 1.02rem;
+    font-weight: 700;
+  }
+  .card-head p { color: var(--text-dim); font-size: 0.82rem; }
+
+  /* 拖放区 */
+  .drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 34px 18px;
+    border-radius: var(--radius-md);
+    border: 1.5px dashed rgba(255,255,255,.16);
+    background: rgba(255,255,255,.02);
+    color: var(--text-dim);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .drop:hover, .drop.over { border-color: rgba(139,124,248,.65); background: rgba(139,124,248,.07); color: var(--text); }
+  .drop svg { width: 30px; height: 30px; color: var(--accent); margin-bottom: 4px; }
+  .drop strong { color: var(--text); font-weight: 600; font-size: .95rem; }
+  .drop span { font-size: 0.78rem; }
+
+  .filecard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid var(--stroke);
+    margin-top: 12px;
+    font-size: 0.86rem;
+  }
+  .filecard .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .filecard .meta { color: var(--text-faint); font-size: 0.78rem; white-space: nowrap; }
+  .filecard .x {
+    margin-left: auto;
+    flex: none;
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font: inherit;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+  .filecard .x:hover { color: var(--text); background: rgba(255,255,255,.08); }
+
+  /* 设置区 */
+  .settings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    margin-top: 18px;
+  }
+  .field { min-width: 0; }
+  .field > label, .field > .lab {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .field .hint { display: block; font-size: 0.72rem; color: var(--text-faint); margin-top: 5px; }
+  .field.full { grid-column: 1 / -1; }
+
+  select, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 9px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--stroke);
+    background: rgba(12, 14, 26, .55);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,124,248,.16); }
+  select option { background: #0d1020; color: var(--text); }
+
+  .dims { display: flex; align-items: center; gap: 8px; }
+  .dims .x { color: var(--text-faint); flex: none; }
+  .dims input { text-align: center; }
+
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+  .check input { width: 15px; height: 15px; accent-color: var(--accent); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    padding: 6px 13px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--stroke);
+    background: rgba(255,255,255,.04);
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: .2s;
+  }
+  .chip:hover { color: var(--text); border-color: var(--stroke-strong); }
+  .chip[aria-pressed="true"] {
+    color: #fff;
+    border-color: rgba(56,189,248,.6);
+    background: rgba(56,189,248,.18);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    height: 22px;
+    background: transparent;
+    cursor: pointer;
+    accent-color: var(--accent);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    margin-top: -5.5px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  input[type="range"]::-moz-range-progress {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border: 1px solid rgba(255, 255, 255, 0.55);
+  }
+  .range-row { display: flex; align-items: center; gap: 10px; }
+  .range-row b { font-size: 0.8rem; color: var(--accent-2); font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: right; }
+  .mini { flex: none; width: 22px; font-size: 0.76rem; color: var(--text-faint); }
+
+  /* 操作行 */
+  .runbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--stroke);
+  }
+  .btn.primary {
+    background: linear-gradient(135deg, rgba(139,124,248,.92), rgba(56,189,248,.85));
+    border-color: rgba(255,255,255,.18);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.primary:disabled { opacity: .55; cursor: not-allowed; filter: none; transform: none; }
+  .btn.ghost { background: rgba(255,255,255,.05); }
+  .runbar .status { margin-left: auto; font-size: 0.8rem; color: var(--text-faint); }
+
+  /* 提示 / 结果 */
+  .notice {
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    border: 1px solid rgba(56,189,248,.25);
+    background: rgba(56,189,248,.08);
+    color: #bfe9ff;
+  }
+  .notice.error { border-color: rgba(255,120,120,.3); background: rgba(255,90,90,.08); color: #ffc2c2; }
+  .notice.ok { border-color: rgba(80,220,140,.3); background: rgba(80,220,140,.08); color: #b6f5cd; }
+
+  .result { margin-top: 16px; }
+  .result-inner {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--stroke);
+  }
+  .result-inner canvas, .result-inner img {
+    max-width: 180px;
+    max-height: 180px;
+    border-radius: 8px;
+    background: repeating-conic-gradient(rgba(255,255,255,.05) 0% 25%, transparent 0% 50%) 50% / 16px 16px;
+  }
+  .result-info { flex: 1; min-width: 0; font-size: 0.85rem; color: var(--text-dim); }
+  .result-info .big { color: var(--text); font-weight: 600; font-size: 0.95rem; margin-bottom: 6px; }
+  .result-info dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 0.8rem; }
+  .result-info dt { color: var(--text-faint); }
+  .result-info dd { color: var(--text-dim); word-break: break-all; }
+  .result-info .btn { margin-top: 12px; }
+
+  .progress {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+    margin-top: 14px;
+  }
+  .progress > i {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width .18s ease;
+  }
+
+  /* 音频波形 */
+  .wave-wrap { position: relative; margin-top: 16px; }
+  .wave-wrap canvas { display: block; width: 100%; height: 120px; border-radius: 10px; background: rgba(8,10,20,.55); border: 1px solid var(--stroke); cursor: crosshair; touch-action: none; }
+  .audio-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .time-pill { font-size: 0.78rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .audio-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* 视频预览 */
+  .video-preview { margin-top: 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); background: #000; }
+  .video-preview video, .video-preview canvas { display: block; max-height: 340px; }
+  .video-preview video { width: 100%; }
+  .video-preview canvas { margin: 0 auto; max-width: 100%; width: auto; }
+  .video-preview.compact { width: fit-content; max-width: 100%; margin-left: auto; margin-right: auto; }
+  .result-inner video { max-width: 200px; max-height: 180px; border-radius: 8px; background: #000; }
+
+  /* favicon 预览 */
+  .icon-preview {
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--stroke);
+  }
+  .icon-preview figure { text-align: center; margin: 0; }
+  .icon-preview img { display: block; image-rendering: pixelated; background: rgba(255,255,255,.06); border-radius: 4px; margin: 0 auto 6px; }
+  .icon-preview figcaption { font-size: 0.72rem; color: var(--text-faint); }
+
+  .note { font-size: 0.78rem; color: var(--text-faint); line-height: 1.7; margin-top: 14px; }
+  .note code { font-size: 0.75rem; color: var(--text-dim); background: rgba(255,255,255,.05); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 760px) {
+    .page { padding: 0 16px 64px; }
+    .bar { padding: 16px 16px 0; }
+    .bar h1 { font-size: 1.15rem; }
+    .bar .badge { margin-left: 0; }
+    .tabs { padding: 0 16px; }
+    .settings { grid-template-columns: 1fr; }
+    .card { padding: 16px; }
+    .result-inner { flex-direction: column; }
+    .result-inner canvas, .result-inner img { max-width: 100%; }
+    .runbar .status { margin-left: 0; width: 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel.active { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="bg" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<header class="bar">
+  <a class="back" href="../">← 个人主页</a>
+  <h1>格式转换</h1>
+  <span class="badge">文件不上传，全部在本机处理</span>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="转换类型">
+  <button class="tab" id="tab-image" role="tab" aria-controls="panel-image" aria-selected="true" data-tab="image">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>
+    图片
+  </button>
+  <button class="tab" id="tab-video" role="tab" aria-controls="panel-video" aria-selected="false" data-tab="video">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg>
+    视频
+  </button>
+  <button class="tab" id="tab-anim" role="tab" aria-controls="panel-anim" aria-selected="false" data-tab="anim">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m9 9 6 3-6 3z"/></svg>
+    动图
+  </button>
+  <button class="tab" id="tab-audio" role="tab" aria-controls="panel-audio" aria-selected="false" data-tab="audio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    音频
+  </button>
+  <button class="tab" id="tab-doc" role="tab" aria-controls="panel-doc" aria-selected="false" data-tab="doc">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 13h6M9 17h4"/></svg>
+    文档 / PDF
+  </button>
+  <button class="tab" id="tab-favicon" role="tab" aria-controls="panel-favicon" aria-selected="false" data-tab="favicon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12 3 7"/></svg>
+    Favicon
+  </button>
+</nav>
+
+<main class="page" id="main">
+
+  <!-- ================= 图片 ================= -->
+  <section class="panel active" id="panel-image" role="tabpanel" aria-labelledby="tab-image">
+    <div class="card">
+      <div class="card-head">
+        <h2>图片转换 / 压缩</h2>
+        <p>PNG · JPEG · WebP，支持裁切、等比缩放与放大</p>
+      </div>
+
+      <label class="drop" id="drop-image">
+        <input type="file" id="file-image" accept="image/*,.bmp,.svg,.heic,.heif,.avif" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>
+        <strong>拖入图片，或点击选择</strong>
+        <span>PNG / JPEG / WebP / GIF / BMP / SVG / AVIF / HEIC</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-image" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一张</button>
+      </div>
+
+      <div class="settings" id="settings-image" hidden>
+        <div class="field">
+          <label for="img-format">输出格式</label>
+          <select id="img-format">
+            <option value="image/webp" selected>WebP（体积小，推荐）</option>
+            <option value="image/jpeg">JPEG（兼容性最好）</option>
+            <option value="image/png">PNG（无损，支持透明）</option>
+          </select>
+        </div>
+        <div class="field" id="img-quality-field">
+          <label for="img-quality">画质 / 压缩率</label>
+          <div class="range-row">
+            <input type="range" id="img-quality" min="10" max="100" step="1" value="82">
+            <b id="img-quality-val">82</b>
+          </div>
+        </div>
+        <div class="field">
+          <label for="img-ratio">比例</label>
+          <select id="img-ratio"></select>
+        </div>
+        <div class="field">
+          <label for="img-mode">缩放方式</label>
+          <select id="img-mode">
+            <option value="cover">裁切填满（先裁再缩）</option>
+            <option value="fit">完整缩放（留白）</option>
+            <option value="stretch">拉伸（不保持比例）</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lab">目标尺寸（px）</span>
+          <div class="dims">
+            <input type="number" id="img-w" min="1" step="1" inputmode="numeric" aria-label="宽度">
+            <span class="x">×</span>
+            <input type="number" id="img-h" min="1" step="1" inputmode="numeric" aria-label="高度">
+          </div>
+          <span class="hint" id="img-dims-hint">原始 0 × 0</span>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <label class="check"><input type="checkbox" id="img-upscale"> 允许放大超过原图</label>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-image" disabled>转换并下载</button>
+        <span class="status" id="status-image"></span>
+      </div>
+
+      <div class="notice" id="notice-image" hidden></div>
+
+      <div class="result" id="result-image" hidden>
+        <div class="result-inner">
+          <canvas id="result-image-canvas" width="1" height="1"></canvas>
+          <div class="result-info">
+            <div class="big" id="result-image-title"></div>
+            <dl id="result-image-meta"></dl>
+            <button class="btn ghost" type="button" id="download-image">下载文件</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">JPEG 不支持透明（透明区域会变黑或白）；WebP 同时支持透明和有损压缩，现代浏览器都能打开。AVIF 需要浏览器的编码器支持，当前版本不提供导出。</p>
+    </div>
+  </section>
+
+  <!-- ================= 视频 ================= -->
+  <section class="panel" id="panel-video" role="tabpanel" aria-labelledby="tab-video">
+    <div class="card">
+      <div class="card-head">
+        <h2>视频转码</h2>
+        <p>裁切 / 等比缩放 + 自定义压缩，导出 WebM（或 MP4）</p>
+      </div>
+
+      <label class="drop" id="drop-video">
+        <input type="file" id="file-video" accept="video/*" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg>
+        <strong>拖入视频，或点击选择</strong>
+        <span>浏览器能播放的格式都可以：MP4 / WebM / MOV / MKV / OGV …</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-video" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一个</button>
+      </div>
+
+      <div class="video-preview" id="video-preview" hidden>
+        <video id="video-el" playsinline muted controls preload="metadata"></video>
+      </div>
+
+      <div class="settings" id="settings-video" hidden>
+        <div class="field">
+          <label for="vid-format">输出格式</label>
+          <select id="vid-format"></select>
+        </div>
+        <div class="field">
+          <label for="vid-ratio">比例</label>
+          <select id="vid-ratio"></select>
+        </div>
+        <div class="field">
+          <label for="vid-mode">缩放方式</label>
+          <select id="vid-mode">
+            <option value="cover">裁切填满</option>
+            <option value="fit">完整缩放（黑边）</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lab">输出尺寸（px）</span>
+          <div class="dims">
+            <input type="number" id="vid-w" min="2" step="2" inputmode="numeric" aria-label="宽度">
+            <span class="x">×</span>
+            <input type="number" id="vid-h" min="2" step="2" inputmode="numeric" aria-label="高度">
+          </div>
+          <span class="hint" id="vid-dims-hint">原始 0 × 0</span>
+        </div>
+        <div class="field">
+          <label for="vid-fps">帧率</label>
+          <select id="vid-fps">
+            <option value="0" selected>跟随原视频</option>
+            <option value="120">120 fps</option>
+            <option value="60">60 fps</option>
+            <option value="59.94">59.94 fps</option>
+            <option value="30">30 fps</option>
+            <option value="29.97">29.97 fps</option>
+            <option value="24">24 fps</option>
+            <option value="15">15 fps</option>
+          </select>
+          <span class="hint" id="vid-fps-hint"></span>
+        </div>
+        <div class="field">
+          <label for="vid-quality">压缩强度</label>
+          <div class="range-row">
+            <input type="range" id="vid-quality" min="1" max="100" step="1" value="55">
+            <b id="vid-quality-val">55</b>
+          </div>
+          <span class="hint" id="vid-bitrate-hint">约 0 Mbps</span>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <label class="check"><input type="checkbox" id="vid-upscale"> 允许放大超过原分辨率</label>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-video" disabled>开始转码</button>
+        <button class="btn ghost" id="stop-video" hidden>停止</button>
+        <span class="status" id="status-video"></span>
+      </div>
+
+      <div class="progress" id="progress-video" hidden><i></i></div>
+      <div class="notice" id="notice-video" hidden></div>
+
+      <div class="result" id="result-video" hidden>
+        <div class="result-inner">
+          <div class="result-info" style="flex:1">
+            <div class="big" id="result-video-title"></div>
+            <dl id="result-video-meta"></dl>
+            <button class="btn ghost" type="button" id="download-video">下载视频</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">转码走浏览器的 <code>MediaRecorder</code>，是<b>实时</b>的：10 分钟的视频大约要跑 10 分钟（要边播边录）。输入只支持浏览器能解码的格式；输出 WebM(VP9/VP8/AV1) 最稳，MP4 需要浏览器支持录制 H.264。选「跟随原视频」时会先静音播一小段测出原始帧率。</p>
+    </div>
+  </section>
+
+  <!-- ================= 动图 ================= -->
+  <section class="panel" id="panel-anim" role="tabpanel" aria-labelledby="tab-anim">
+    <div class="card">
+      <div class="card-head">
+        <h2>视频 ⇄ 动图</h2>
+        <p>视频转 GIF / APNG，动图转视频；同样支持裁切、缩放与改帧率</p>
+      </div>
+
+      <label class="drop" id="drop-anim">
+        <input type="file" id="file-anim" accept="video/*,image/gif,image/apng,image/webp,image/avif,.gif,.apng,.webp,.avif" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m9 9 6 3-6 3z"/></svg>
+        <strong>拖入视频或动图，或点击选择</strong>
+        <span>视频：MP4 / WebM / MOV …　动图：GIF / APNG / WebP / AVIF</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-anim" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一个</button>
+      </div>
+
+      <div class="video-preview" id="anim-preview-wrap" hidden>
+        <canvas id="anim-preview"></canvas>
+        <video id="anim-video" playsinline muted controls preload="metadata" hidden></video>
+      </div>
+
+      <div class="settings" id="settings-anim" hidden>
+        <div class="field">
+          <label for="anim-format">输出格式</label>
+          <select id="anim-format"></select>
+        </div>
+        <div class="field">
+          <label for="anim-ratio">比例</label>
+          <select id="anim-ratio"></select>
+        </div>
+        <div class="field">
+          <label for="anim-mode">缩放方式</label>
+          <select id="anim-mode">
+            <option value="cover">裁切填满</option>
+            <option value="fit">完整缩放（留黑边）</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lab">输出尺寸（px）</span>
+          <div class="dims">
+            <input type="number" id="anim-w" min="2" step="2" inputmode="numeric" aria-label="宽度">
+            <span class="x">×</span>
+            <input type="number" id="anim-h" min="2" step="2" inputmode="numeric" aria-label="高度">
+          </div>
+          <span class="hint" id="anim-dims-hint">原始 0 × 0</span>
+        </div>
+        <div class="field">
+          <label for="anim-fps">帧率</label>
+          <select id="anim-fps">
+            <option value="0" selected>跟随原视频</option>
+            <option value="30">30 fps</option>
+            <option value="24">24 fps</option>
+            <option value="15">15 fps（动图常用）</option>
+            <option value="12">12 fps</option>
+            <option value="10">10 fps</option>
+          </select>
+          <span class="hint" id="anim-fps-hint"></span>
+        </div>
+        <div class="field" id="anim-colors-field">
+          <label for="anim-colors">GIF 颜色数</label>
+          <select id="anim-colors">
+            <option value="256">256 色（画质最好）</option>
+            <option value="128" selected>128 色（体积小一半）</option>
+            <option value="64">64 色（更小）</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <label class="check"><input type="checkbox" id="anim-upscale"> 允许放大超过原尺寸</label>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-anim" disabled>开始转换</button>
+        <span class="status" id="status-anim"></span>
+      </div>
+
+      <div class="progress" id="progress-anim" hidden><i></i></div>
+      <div class="notice" id="notice-anim" hidden></div>
+
+      <div class="result" id="result-anim" hidden>
+        <div class="result-inner">
+          <img id="anim-result-img" alt="动图预览" hidden>
+          <video id="anim-result-video" muted loop autoplay playsinline hidden></video>
+          <div class="result-info">
+            <div class="big" id="result-anim-title"></div>
+            <dl id="result-anim-meta"></dl>
+            <button class="btn ghost" type="button" id="download-anim">下载文件</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">视频转 APNG 是无损的（体积大），转 GIF 会量化到 256 色以内。浏览器无法编码 AVIF 动图，所以 AVIF 只支持作为输入；动图转视频按原速录制，长度等于动图时长。</p>
+    </div>
+  </section>
+
+  <!-- ================= 音频 ================= -->
+  <section class="panel" id="panel-audio" role="tabpanel" aria-labelledby="tab-audio">
+    <div class="card">
+      <div class="card-head">
+        <h2>音频转换 / 裁剪</h2>
+        <p>MP3 · FLAC · WAV · OGG · M4A · AAC · OPUS 都能读，导出 WAV（无损）或 MP3</p>
+      </div>
+
+      <label class="drop" id="drop-audio">
+        <input type="file" id="file-audio" accept="audio/*" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <strong>拖入音频，或点击选择</strong>
+        <span>MP3 / FLAC / WAV / OGG / M4A / AAC / OPUS</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-audio" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一个</button>
+      </div>
+
+      <div class="wave-wrap" id="wave-wrap" hidden>
+        <canvas id="wave" width="1200" height="240" aria-label="音频波形，可拖动选择裁剪区间"></canvas>
+        <div class="audio-tools">
+          <button class="btn ghost" type="button" id="audio-play">试听选中</button>
+          <span class="time-pill" id="audio-sel">0:00.00 — 0:00.00</span>
+          <div class="audio-actions">
+            <button class="btn ghost" type="button" id="audio-all">全选</button>
+            <button class="btn ghost" type="button" id="audio-reset">重置</button>
+          </div>
+        </div>
+        <p class="note" style="margin-top:10px">拖动两端的手柄决定裁剪区间；在选区中间拖动可以整体平移。</p>
+      </div>
+
+      <div class="settings" id="settings-audio" hidden>
+        <div class="field">
+          <label for="audio-format">导出格式</label>
+          <select id="audio-format">
+            <option value="wav" selected>WAV（无损 PCM）</option>
+            <option value="mp3">MP3（有损压缩）</option>
+          </select>
+        </div>
+        <div class="field" id="audio-bitrate-field">
+          <label for="audio-bitrate">MP3 码率</label>
+          <select id="audio-bitrate">
+            <option value="320">320 kbps（最好）</option>
+            <option value="256">256 kbps</option>
+            <option value="192" selected>192 kbps</option>
+            <option value="128">128 kbps（最小）</option>
+            <option value="96">96 kbps</option>
+          </select>
+          <span class="hint">码率越低文件越小、损失越多；WAV 不支持压缩参数。</span>
+        </div>
+        <div class="field">
+          <span class="lab">采样率</span>
+          <select id="audio-rate">
+            <option value="0">保持原始</option>
+            <option value="48000">48 kHz</option>
+            <option value="44100">44.1 kHz</option>
+            <option value="32000">32 kHz</option>
+            <option value="22050">22.05 kHz</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lab">声道</span>
+          <select id="audio-channels">
+            <option value="0">保持原始</option>
+            <option value="2">立体声</option>
+            <option value="1">单声道（体积减半）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-audio" disabled>导出并下载</button>
+        <span class="status" id="status-audio"></span>
+      </div>
+
+      <div class="progress" id="progress-audio" hidden><i></i></div>
+      <div class="notice" id="notice-audio" hidden></div>
+
+      <div class="result" id="result-audio" hidden>
+        <div class="result-inner">
+          <div class="result-info" style="flex:1">
+            <div class="big" id="result-audio-title"></div>
+            <dl id="result-audio-meta"></dl>
+            <button class="btn ghost" type="button" id="download-audio">下载音频</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">解码用浏览器自带的解码器（能播就能读）。导出 MP3 依赖 <code>lamejs</code>，首次使用会从 CDN 加载约 100 KB；WAV 是完全无损的 PCM，体积较大（每分钟约 5–10 MB）。</p>
+    </div>
+  </section>
+
+  <!-- ================= 文档 / PDF ================= -->
+  <section class="panel" id="panel-doc" role="tabpanel" aria-labelledby="tab-doc">
+    <div class="card">
+      <div class="card-head">
+        <h2>文档与 PDF 互转</h2>
+        <p>DOCX → PDF 保留版式与图片；PDF ↔ 图片 / 文本 / DOCX</p>
+      </div>
+
+      <label class="drop" id="drop-doc">
+        <input type="file" id="file-doc" accept=".pdf,.docx,.txt,.md,.markdown,.html,.htm,image/*" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/></svg>
+        <strong>拖入文件，或点击选择</strong>
+        <span>PDF / DOCX / TXT / Markdown / HTML / 图片</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-doc" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一个</button>
+      </div>
+
+      <div class="settings" id="settings-doc" hidden>
+        <div class="field">
+          <label for="doc-target">转换为</label>
+          <select id="doc-target"></select>
+        </div>
+        <div class="field" id="doc-dpi-field">
+          <label for="doc-dpi">PDF 转图片的分辨率</label>
+          <select id="doc-dpi">
+            <option value="1">1×（约 96 dpi，预览用）</option>
+            <option value="2" selected>2×（约 144 dpi，推荐）</option>
+            <option value="3">3×（约 216 dpi，打印用）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-doc" disabled>开始转换</button>
+        <span class="status" id="status-doc"></span>
+      </div>
+
+      <div class="progress" id="progress-doc" hidden><i></i></div>
+      <div class="notice" id="notice-doc" hidden></div>
+
+      <div class="result" id="result-doc" hidden>
+        <div class="result-inner">
+          <div class="result-info" style="flex:1">
+            <div class="big" id="result-doc-title"></div>
+            <dl id="result-doc-meta"></dl>
+            <button class="btn ghost" type="button" id="download-doc">下载文件</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">DOCX → PDF 会在浏览器里解析 OOXML（段落样式、编号、表格、图片、分页、页眉页脚），自己排版成 A4 页面再光栅化嵌入 PDF，版式与图片都会保留，代价是文字不可选中。PDF → DOCX 仍是<b>内容级</b>（只保留文字）。浮动文本框、公式、图表、SmartArt、EMF/WMF 图片、纵向合并单元格暂不支持。</p>
+    </div>
+  </section>
+
+  <!-- ================= Favicon ================= -->
+  <section class="panel" id="panel-favicon" role="tabpanel" aria-labelledby="tab-favicon">
+    <div class="card">
+      <div class="card-head">
+        <h2>图片 → favicon.ico</h2>
+        <p>最大 256 × 256，可选常用尺寸或自定义宽高</p>
+      </div>
+
+      <label class="drop" id="drop-favicon">
+        <input type="file" id="file-favicon" accept="image/*" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12 3 7"/></svg>
+        <strong>拖入图片，或点击选择</strong>
+        <span>建议用 512 × 512 以上的正方形图</span>
+      </label>
+
+      <div class="filecard" id="fileinfo-favicon" hidden>
+        <span class="name" data-name></span>
+        <span class="meta" data-meta></span>
+        <button class="x" type="button" data-clear>换一张</button>
+      </div>
+
+      <div class="settings" id="settings-favicon" hidden>
+        <div class="field full">
+          <span class="lab">常用尺寸</span>
+          <div class="chips" id="fav-sizes">
+            <button class="chip" type="button" data-size="16">16 × 16</button>
+            <button class="chip" type="button" data-size="32">32 × 32</button>
+            <button class="chip" type="button" data-size="64">64 × 64</button>
+            <button class="chip" type="button" data-size="128">128 × 128</button>
+            <button class="chip" type="button" data-size="256" aria-pressed="true">256 × 256</button>
+          </div>
+        </div>
+        <div class="field full">
+          <span class="lab">自定义宽高（拖动滑块，或直接输入，最大 256）</span>
+          <div class="dims">
+            <input type="number" id="fav-w" min="1" max="256" step="1" inputmode="numeric" value="256" aria-label="宽度">
+            <span class="x">×</span>
+            <input type="number" id="fav-h" min="1" max="256" step="1" inputmode="numeric" value="256" aria-label="高度">
+          </div>
+          <div class="range-row" style="margin-top:12px">
+            <span class="mini">宽</span>
+            <input type="range" id="fav-w-range" min="1" max="256" step="1" value="256" aria-label="宽度滑块">
+            <b id="fav-w-val">256</b>
+          </div>
+          <div class="range-row" style="margin-top:8px">
+            <span class="mini">高</span>
+            <input type="range" id="fav-h-range" min="1" max="256" step="1" value="256" aria-label="高度滑块">
+            <b id="fav-h-val">256</b>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fav-mode">填充方式</label>
+          <select id="fav-mode">
+            <option value="cover">裁切填满（不变形）</option>
+            <option value="fit">完整缩放（留白）</option>
+            <option value="stretch">拉伸变形</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <label class="check"><input type="checkbox" id="fav-multi"> 附带 16 / 32 / 48 小尺寸（同一文件内）</label>
+        </div>
+      </div>
+
+      <div class="icon-preview" id="fav-preview" hidden>
+        <figure>
+          <img id="fav-preview-img" alt="favicon 预览" width="128" height="128">
+          <figcaption id="fav-preview-size">128 px 预览</figcaption>
+        </figure>
+        <figure>
+          <img id="fav-preview-16" alt="16px 预览" width="16" height="16">
+          <figcaption>16 px</figcaption>
+        </figure>
+        <figure>
+          <img id="fav-preview-32" alt="32px 预览" width="32" height="32">
+          <figcaption>32 px</figcaption>
+        </figure>
+      </div>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-favicon" disabled>生成 .ico 并下载</button>
+        <span class="status" id="status-favicon"></span>
+      </div>
+
+      <div class="notice" id="notice-favicon" hidden></div>
+    </div>
+  </section>
+
+  <p class="note" style="margin-top:26px">所有处理都在你的浏览器里完成，文件不会上传到任何服务器。转换中途关掉页面就前功尽弃，大文件请留够内存。</p>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript>
+  <div class="page">
+    <div class="card">
+      <p>这个工具完全依赖浏览器的 JavaScript 和 Web API，请开启 JavaScript 后刷新。</p>
+    </div>
+  </div>
+</noscript>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

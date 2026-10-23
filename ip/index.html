@@ -1,80 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的 IP · JimmyXiao</title>
+<meta name="description" content="打开即可查看当前公网 IP，能拿到时一并显示归属地、运营商。多个接口自动容错，谁先返回用谁。">
+<meta name="theme-color" content="#05060e">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://jimmyxiao2026.github.io/ip/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F766E'/%3E%3Ctext x='32' y='46' font-size='34' text-anchor='middle' fill='white' font-family='monospace'%3EIP%3C/text%3E%3C/svg%3E">
-<style>body{font-family:Consolas,Menlo,monospace;padding:24px;font-size:16px;white-space:pre-line;}</style>
+<style>
+  body {
+    font-family: Consolas, Menlo, "SFMono-Regular", monospace;
+    padding: 24px;
+    font-size: 16px;
+    line-height: 1.7;
+    white-space: pre-line;
+    background: #05060e;
+    color: #e8ecf8;
+  }
+  #out:empty::before { content: "正在查询…"; color: #9aa3bd; }
+  .hint { margin-top: 18px; font-size: 12px; color: #6b7390; white-space: normal; }
+  .hint a { color: #38bdf8; text-decoration: none; }
+  .hint a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
-<script>
-const apis = [
-  // 带地理位置的接口优先，成功后输出 IP + 换行 + 位置
-  'https://ifconfig.co/json',
-  'https://myip.ipip.net/json',
-  'https://icanhazip.com',
-  'https://ifconfig.me/ip',
-  'https://api.ip.sb/ip',
-  'https://ipinfo.io/ip',
-  'https://httpbin.org/ip'
-];
-let current = 0;
+<div id="out"></div>
+<noscript><p>本页需要 JavaScript 才能查询 IP。</p></noscript>
+<p class="hint">数据来自第三方接口，仅供参考 · <a href="/">返回个人主页</a></p>
 
-function fetchIp() {
-  if (current >= apis.length) {
-    document.body.textContent = '获取IP失败';
-    return;
+<script>
+(function () {
+  'use strict';
+  // 带地理位置的接口优先，成功后输出 IP + 换行 + 位置
+  var apis = [
+    'https://ifconfig.co/json',
+    'https://myip.ipip.net/json',
+    'https://icanhazip.com',
+    'https://ifconfig.me/ip',
+    'https://api.ip.sb/ip',
+    'https://ipinfo.io/ip',
+    'https://httpbin.org/ip'
+  ];
+  var out = document.getElementById('out');
+  var current = 0;
+
+  function show(text) {
+    out.textContent = text;
   }
-  const url = apis[current];
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error('status not ok');
-      if (url.includes('json')) {
-        return res.json().then(data => {
-          // ipip.net 是 {ret, data:{...}} 嵌套结构，先归一化
-          const d = data.data && typeof data.data === 'object' ? data.data : data;
-          const ip = (d.origin || d.ip || d.ip_addr || '').trim();
-          if (!ip) throw new Error('no ip field');
-          let loc = '';
-          let isp = '';
-          // ipip.net: data.location 可能是 "广东省深圳市 电信" 字符串，或 ["中国","广东","深圳","","移动"] 数组
-          if (d.location) {
-            if (Array.isArray(d.location)) {
-              const parts = d.location.map(s => (s || '').trim());
-              // 标准格式 5 项 [国家,省份,城市,区县,运营商]，最后一项是运营商，单独拆出
-              if (parts.length >= 5) {
-                isp = parts[parts.length - 1];
-                loc = parts.slice(0, -1).filter(Boolean).join(' ').trim();
+
+  function fetchIp() {
+    if (current >= apis.length) {
+      show('获取 IP 失败，可能是网络或接口限流，稍后刷新试试。');
+      return;
+    }
+    var url = apis[current];
+    fetch(url)
+      .then(function (res) {
+        if (!res.ok) throw new Error('status not ok');
+        if (url.indexOf('json') !== -1) {
+          return res.json().then(function (data) {
+            // ipip.net 是 {ret, data:{...}} 嵌套结构，先归一化
+            var d = data.data && typeof data.data === 'object' ? data.data : data;
+            var ip = String(d.origin || d.ip || d.ip_addr || '').trim();
+            if (!ip) throw new Error('no ip field');
+            var loc = '';
+            var isp = '';
+            // ipip.net: data.location 可能是 "广东省深圳市 电信" 字符串，或 ["中国","广东","深圳","","移动"] 数组
+            if (d.location) {
+              if (Array.isArray(d.location)) {
+                var parts = d.location.map(function (s) { return String(s || '').trim(); });
+                // 标准格式 5 项 [国家,省份,城市,区县,运营商]，最后一项是运营商，单独拆出
+                if (parts.length >= 5) {
+                  isp = parts[parts.length - 1];
+                  loc = parts.slice(0, -1).filter(Boolean).join(' ');
+                } else {
+                  loc = parts.filter(Boolean).join(' ');
+                }
               } else {
-                loc = parts.filter(Boolean).join(' ').trim();
+                loc = String(d.location).trim();
               }
-            } else {
-              loc = d.location.trim();
             }
-          }
-          // ifconfig.co/json 等: 拆分的 city / region(region_name) / country 字段
-          if (!loc && d.city) {
-            loc = [d.city, d.region || d.region_name, d.country].filter(Boolean).join(' ').trim();
-          }
-          return { ip: ip, loc: loc, isp: isp };
+            // ifconfig.co/json 等: 拆分的 city / region(region_name) / country 字段
+            if (!loc && d.city) {
+              loc = [d.city, d.region || d.region_name, d.country].filter(Boolean).join(' ');
+            }
+            return { ip: ip, loc: loc, isp: isp };
+          });
+        }
+        return res.text().then(function (t) {
+          return { ip: t.trim(), loc: '', isp: '' };
         });
-      } else {
-        return res.text().then(t => ({ ip: t.trim(), loc: '', isp: '' }));
-      }
-    })
-    .then(info => {
-      // 输出格式：IP 换行 位置（有则换行 运营商）
-      let text = info.ip;
-      if (info.loc) text += '\n' + info.loc;
-      if (info.isp) text += '\n' + info.isp;
-      document.body.textContent = text;
-    })
-    .catch(() => {
-      current++;
-      fetchIp();
-    });
-}
-fetchIp();
+      })
+      .then(function (info) {
+        // 输出格式：IP 换行 位置（有则换行 运营商）
+        var text = info.ip;
+        if (info.loc) text += '\n' + info.loc;
+        if (info.isp) text += '\n' + info.isp;
+        show(text);
+      })
+      .catch(function () {
+        current++;
+        fetchIp();
+      });
+  }
+
+  fetchIp();
+})();
 </script>
 </body>
 </html>

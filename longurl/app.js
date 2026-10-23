@@ -13,9 +13,7 @@
  * page — including whatever message happens to be on screen — is re-rendered
  * from the dictionary in `applyLanguage()`.
  */
-
 import { DEFAULT_LENGTH, SOFT_MAX_LENGTH, buildLink, parseLink } from './lib.js';
-
 const STRINGS = {
   en: {
     pageTitle: 'Link Expander',
@@ -41,8 +39,7 @@ const STRINGS = {
     limitsBody:
       'Up to 8192 characters works. Past 2000, some browsers, chat apps and mail clients start truncating, ' +
       'and the page warns you when you go that far. The destination has to be an http:// or https:// link.',
-    credit: 'Plain HTML, CSS and JS, no tracking. Styled after ',
-    repo: 'Source on GitHub',
+    creditHtml: 'Plain HTML, CSS and JS, no tracking.<br class="small-only"> Refer to <a href="https://thebestmotherfuckingweb.site" rel="noopener">thebestmotherfuckingweb.site</a><br class="small-only"> · <a id="credit-repo" href="https://github.com/JwbFut/link-expander" rel="noopener">Source on GitHub</a>',
     redirectTitle: 'Taking you there…',
     redirectManual: 'If nothing happens, open this link:',
     redirectEdited:
@@ -91,8 +88,7 @@ const STRINGS = {
     limitsBody:
       '最长支持 8192 个字符；超过 2000 时，部分浏览器、聊天软件和邮件客户端会开始截断，到那一步页面会提醒你。' +
       '目标地址必须以 http:// 或 https:// 开头。',
-    credit: '纯 HTML、CSS 和 JS，没有任何追踪。风格参照 ',
-    repo: 'GitHub 源码',
+    creditHtml: '纯 HTML、CSS 和 JS，没有任何追踪。<br class="small-only">参照 <a href="https://thebestmotherfuckingweb.site" rel="noopener">thebestmotherfuckingweb.site</a><br class="small-only"> · <a id="credit-repo" href="https://github.com/JwbFut/link-expander" rel="noopener">GitHub 源码</a>',
     redirectTitle: '正在跳转…',
     redirectManual: '如果没有自动跳转，请打开这个链接：',
     redirectEdited: '这个链接中途被改过：噪音和种子对不上，目标地址可能不是发送者原本的意思。',
@@ -115,11 +111,9 @@ const STRINGS = {
     },
   },
 };
-
 const STORAGE_KEY = 'linkexpander';
 const REDIRECT_DELAY = 400;
 const $ = (id) => document.getElementById(id);
-
 /** Everything on screen is rendered from these four pieces of state. */
 let lang = readLang();
 let lastResult = null;
@@ -128,9 +122,7 @@ let view = 'generator';
 let redirectTarget = null;
 let redirectIntact = true;
 let redirectTimer = null;
-
 /* ------------------------------------------------------------------ helpers */
-
 function readLang() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -138,13 +130,11 @@ function readLang() {
   } catch { /* ignore */ }
   return (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
 }
-
 function remember(patch) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...readMemory(), ...patch }));
   } catch { /* ignore */ }
 }
-
 function readMemory() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
@@ -152,25 +142,20 @@ function readMemory() {
     return {};
   }
 }
-
 function t() {
   return STRINGS[lang];
 }
-
 function fill(template, values = {}) {
   return String(template).replace(/\{(\w+)\}/g, (match, key) =>
     Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match
   );
 }
-
 /* ------------------------------------------------------------------- render */
-
 /** The one place that knows how to put the current language on the page. */
 function applyLanguage() {
   const strings = t();
   document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
   document.title = strings.pageTitle;
-
   $('title').textContent = strings.h1;
   $('subtitle').textContent = strings.subtitle;
   $('label-target').textContent = strings.targetLabel;
@@ -184,17 +169,17 @@ function applyLanguage() {
   $('how-title').textContent = strings.howTitle;
   $('how-body').textContent = strings.howBody;
   $('limits-body').textContent = strings.limitsBody;
-  $('credit-text').textContent = strings.credit;
-  $('credit-repo').textContent = strings.repo;
+
+  // 渲染完整底部版权HTML
+  document.getElementById('credit-wrap').innerHTML = strings.creditHtml;
+
   $('redirect-note').textContent = strings.redirectEdited;
   $('redirect-home').textContent = strings.home;
   $('lang').textContent = lang === 'en' ? '中文' : 'English';
-
   renderResult();
   renderMessage();
   renderView();
 }
-
 /** `lastResult.seed` comes out of the generated link, not out of the input. */
 function renderResult() {
   if (!lastResult) return;
@@ -207,7 +192,6 @@ function renderResult() {
   });
   $('open').href = lastResult.url;
 }
-
 function renderMessage() {
   const node = $('message');
   if (!lastMessage) {
@@ -215,7 +199,6 @@ function renderMessage() {
     node.textContent = '';
     return;
   }
-
   const strings = t();
   let text = '';
   let ok = false;
@@ -228,19 +211,16 @@ function renderMessage() {
     text = strings[lastMessage.key];
     ok = lastMessage.ok;
   }
-
   node.textContent = text;
   node.classList.toggle('ok', Boolean(ok));
   node.hidden = false;
 }
-
 function renderView() {
   const generator = view === 'generator';
   $('view-generator').hidden = !generator;
   $('view-redirect').hidden = generator;
   setIndexable(generator);
   if (generator) return;
-
   const strings = t();
   if (!redirectTarget) {
     document.title = strings.notFoundTitle;
@@ -250,7 +230,6 @@ function renderView() {
     $('redirect-note').hidden = true;
     return;
   }
-
   document.title = `${strings.redirectTitle} ${redirectTarget}`;
   $('redirect-title').textContent = strings.redirectTitle;
   $('redirect-manual').textContent = strings.redirectManual;
@@ -260,12 +239,10 @@ function renderView() {
   link.textContent = redirectTarget;
   $('redirect-note').hidden = redirectIntact;
 }
-
 function setMessage(message) {
   lastMessage = message;
   renderMessage();
 }
-
 /**
  * The generator page is the canonical, indexable one (its `rel=canonical` lives
  * in index.html). A generated link is random, infinite in number and answered
@@ -278,20 +255,16 @@ function setIndexable(indexable) {
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical && !indexable) canonical.remove();
 }
-
 /* --------------------------------------------------------------- generator */
-
 function generate(event) {
   event.preventDefault();
   const rawTarget = $('target').value;
   const rawLength = $('length').value.trim();
   $('result').hidden = true;
-
   if (!rawLength) {
     setMessage({ kind: 'error', code: 'INVALID_LENGTH' });
     return;
   }
-
   let built;
   try {
     built = buildLink(rawTarget, rawLength, { seed: $('seed').value });
@@ -299,20 +272,16 @@ function generate(event) {
     setMessage({ kind: 'error', code: (error && error.code) || 'unknown', meta: (error && error.meta) || {} });
     return;
   }
-
   const restored = parseLink(built.url);
   const result = restored ? { ...built, seed: restored.seed } : built;
-
   // Write the seed back, so pressing Expand again reproduces this exact link.
   $('seed').value = result.seed;
   lastResult = result;
   renderResult();
   remember({ target: rawTarget, seed: result.seed, length: String(rawLength) });
-
   if (result.warning) setMessage({ kind: 'warning', name: result.warning, meta: { soft: SOFT_MAX_LENGTH } });
   else setMessage(null);
 }
-
 async function copyResult() {
   const node = $('output');
   if (!node.value) return;
@@ -325,17 +294,13 @@ async function copyResult() {
     setMessage({ kind: 'notice', key: ok ? 'copied' : 'copyFailed', ok });
   }
 }
-
 /* ---------------------------------------------------------------- redirect */
-
 function enterRedirect(parsed) {
   view = 'redirect';
   redirectTarget = parsed ? parsed.target : null;
   redirectIntact = parsed ? parsed.intact : true;
 }
-
 /* -------------------------------------------------------------------- boot */
-
 const BASE_PATH = '/longurl';
 function stripBase(path) {
   const p = path.replace(/\/+$/, '') || '/';
@@ -353,7 +318,6 @@ function route() {
   const isDeepLink = stripped.length > 1 && !/^\/(index\.html)?$/.test(stripped);
   return { isDeepLink, parsed: isDeepLink ? parseLink(stripped) : null };
 }
-
 function boot() {
   const params = new URLSearchParams(window.location.search);
   const memory = readMemory();
@@ -361,7 +325,6 @@ function boot() {
   $('length').value = memory.length || String(DEFAULT_LENGTH);
   $('seed').value = memory.seed || '';
   $('redirect-home').href = window.location.origin + '/longurl/';
-
   // ?lang=en|zh: same page, an explicit language, handy to share or to override
   // what navigator.language guessed.
   const requestedLang = params.get('lang');
@@ -369,7 +332,6 @@ function boot() {
     lang = requestedLang;
     remember({ lang });
   }
-
   $('form').addEventListener('submit', generate);
   $('copy').addEventListener('click', copyResult);
   $('lang').addEventListener('click', () => {
@@ -377,24 +339,20 @@ function boot() {
     remember({ lang });
     applyLanguage();
   });
-
   const { isDeepLink, parsed } = route();
   if (isDeepLink) enterRedirect(parsed);
   else view = 'generator';
-
   // One render pass for whichever view we landed on, in the right language.
   applyLanguage();
-
   if (isDeepLink) {
     // Give the browser a moment to paint the page before leaving. Switching
-    // language re-renders the view but never re-arms this.
+    // language re‑renders the view but never re‑arms this.
     if (redirectTarget) {
       clearTimeout(redirectTimer);
       redirectTimer = setTimeout(() => window.location.replace(redirectTarget), REDIRECT_DELAY);
     }
     return;
   }
-
   // Preset link, e.g. /?target=example.com&seed=abc&length=200.
   if (params.get('target')) {
     $('target').value = params.get('target');
@@ -403,8 +361,6 @@ function boot() {
     generate({ preventDefault() {} });
     return;
   }
-
   $('target').focus();
 }
-
 boot();
