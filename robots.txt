@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /exbox/
+Disallow: /servers/
 
 Sitemap: https://jimmyxiao2026.github.io/sitemap.xml

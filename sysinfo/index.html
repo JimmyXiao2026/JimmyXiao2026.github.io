@@ -240,8 +240,10 @@ tr:hover {
         <section class="glass-card">
             <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
             <div id="privacyBox"></div>
-            <!-- EasyList 经典cosmetic诱饵class组合 -->
-            <div class="ad-unit ad-box adsbox banner_ad" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
+            <!-- EasyList 经典 cosmetic 诱饵 class 组合；放到屏幕外，保持真实尺寸，
+                 这样「被规则隐藏」与「正常渲染」才区分得开 -->
+            <div class="ad-unit ad-box adsbox banner_ad" aria-hidden="true"
+                 style="position:absolute;left:-9999px;top:-9999px;width:300px;height:250px;pointer-events:none;"></div>
         </section>
         <section class="glass-card">
             <h2>📌 UA解析 · 系统 & 浏览器 & CPU</h2>
@@ -439,48 +441,51 @@ setTimeoutAll();
 async function startAdDetect(){
     const box = document.getElementById("privacyBox");
     const bait = document.querySelector(".ad-unit");
+    const hitReason = [];
     let domBlocked = false;
-    let fetchBlocked = false;
-    let hitReason = [];
+    let urlBlocked = false;
 
-    // DOM诱饵检测（cosmetic CSS隐藏，保留）
-    await new Promise(r=>setTimeout(r,150));
-    if(bait.offsetHeight === 0) {
-        domBlocked = true;
-        hitReason.push("DOM诱饵被CSS隐藏");
+    // 等诱饵完成一次布局
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 120)));
+
+    // 1) 元素诱饵：广告拦截器的「元素隐藏」规则会把 .adsbox 这类占位设成 display:none
+    const container = document.getElementById("jsContent");
+    const containerVisible = !!container && getComputedStyle(container).display !== "none";
+    if(bait && containerVisible){
+        const cs = getComputedStyle(bait);
+        if(bait.offsetHeight === 0 || bait.offsetWidth === 0
+            || cs.display === "none" || cs.visibility === "hidden"){
+            domBlocked = true;
+            hitReason.push("页面广告占位被隐藏");
+        }
     }
 
-    // HEAD探针，不用script标签，避开IDM劫持
-    const probeUrls = [
-        "https://ad.doubleclick.net/ddm/trackimp",
-        "https://www.googleadservices.com/pagead/conversion_async.js"
-    ];
-    const probePromises = probeUrls.map(src => {
-        return new Promise(resolve => {
-            const ctl = new AbortController();
-            const t = setTimeout(()=>ctl.abort(),1200);
-            fetch(src, {
-                method: "HEAD",
-                mode: "no-cors",
-                signal: ctl.signal
-            })
-            .then(r => {
-                clearTimeout(t);
-                resolve(false);
-            })
-            .catch(() => {
-                clearTimeout(t);
-                resolve(true);
-            });
-        });
-    });
-    const results = await Promise.all(probePromises);
-    if(results.some(v=>v)) {
-        fetchBlocked = true;
-        hitReason.push("广告探针请求被阻断（超时/拒绝）");
+    // 2) URL 规则探测：同源 + 带广告特征的路径。
+    //    被规则拦截时 fetch 会直接 reject，正常会拿到 404 响应。
+    //    不碰外网广告域名，所以「被墙 / 断网」不会再被误判成开了广告拦截。
+    if(location.protocol === "http:" || location.protocol === "https:"){
+        const probe = async (path) => {
+            try{
+                await fetch(path + "?t=" + Date.now(), { cache: "no-store" });
+                return true;    // 拿到响应 = 没被拦
+            }catch(e){
+                return false;   // 请求被拦截
+            }
+        };
+        // 先确认同源请求本身是通的；不通就不下结论
+        const controlOk = await probe("/assets/theme.css");
+        if(controlOk){
+            for(const path of ["/sysinfo/ads/adframe.js", "/sysinfo/ad-banner/advertisement.js"]){
+                if(!(await probe(path))){
+                    urlBlocked = true;
+                    hitReason.push("广告特征 URL 被拦截");
+                    break;
+                }
+            }
+        }
     }
 
-    const adBlockDetected = domBlocked || fetchBlocked;
+    const adBlockDetected = domBlocked || urlBlocked;
 
     if(isTimeout) return;
     const dnt = navigator.doNotTrack;
