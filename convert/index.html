@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>格式转换 · 图片 / 视频 / 动图 / 音频 / 文档 · JimmyXiao</title>
-<meta name="description" content="纯浏览器本地运行的格式转换工具：图片压缩裁切、视频转码（含 AV1）、视频与动图（GIF / APNG）互转、音频裁剪与 MP3/WAV 导出、文档与 PDF 互转、图片转 favicon.ico。文件不上传，全部在本机处理。" />
+<meta name="description" content="纯浏览器本地运行的格式转换工具：图片压缩裁切、视频转码（含 AV1）、视频与动图（GIF / APNG）互转、音频裁剪与 FLAC/WAV/MP3/OGG 导出（支持网易云 NCM 解密、保留封面与标签）、文档与 PDF 互转、图片转 favicon.ico。文件不上传。" />
 <meta name="theme-color" content="#05060e" />
 <link rel="canonical" href="https://jimmyxiao2026.github.io/convert/" />
 <meta property="og:type" content="website" />
@@ -374,6 +374,83 @@
   .audio-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .time-pill { font-size: 0.78rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .audio-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* 音频标签编辑 */
+  .tags-editor {
+    display: flex;
+    gap: 18px;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--stroke);
+  }
+  .cover-box { flex: none; width: 132px; text-align: center; }
+  .cover-box img,
+  .cover-empty {
+    width: 132px;
+    height: 132px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--stroke);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-size: 0.78rem;
+  }
+  .cover-actions { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+  .cover-actions .chip { padding: 4px 9px; font-size: 0.72rem; }
+  .tag-fields { flex: 1; min-width: 0; display: grid; gap: 9px; }
+  .tag-fields label { display: block; font-size: 0.74rem; color: var(--text-dim); }
+  .tag-fields input {
+    width: 100%;
+    margin-top: 4px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--stroke);
+    background: rgba(12, 14, 26, .55);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.86rem;
+    outline: none;
+  }
+  .tag-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,124,248,.16); }
+  .tag-fields .tech { font-size: 0.74rem; color: var(--text-faint); line-height: 1.6; margin: 0; }
+
+  @media (max-width: 640px) {
+    .tags-editor { flex-direction: column; align-items: center; }
+    .tag-fields { width: 100%; }
+  }
+
+  /* NCM 批量 */
+  .ncm-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .ncm-rows {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    max-height: 340px;
+    overflow: auto;
+  }
+  .ncm-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid var(--stroke);
+    font-size: .82rem;
+  }
+  .ncm-row .ncm-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ncm-row .ncm-size { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .ncm-row .ncm-state { color: var(--text-faint); white-space: nowrap; }
+  .ncm-row .ncm-state.ok { color: #4ade80; }
+  .ncm-row .ncm-state.err { color: #f87171; }
+  .ncm-row .ncm-state.run { color: var(--accent); }
 
   /* 视频预览 */
   .video-preview { margin-top: 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); background: #000; }
@@ -755,20 +832,38 @@
     <div class="card">
       <div class="card-head">
         <h2>音频转换 / 裁剪</h2>
-        <p>MP3 · FLAC · WAV · OGG · M4A · AAC · OPUS 都能读，导出 WAV（无损）或 MP3</p>
+        <p>MP3 · FLAC · WAV · OGG · M4A · AAC · OPUS · 网易云 NCM，导出时保留封面与标签</p>
       </div>
 
       <label class="drop" id="drop-audio">
-        <input type="file" id="file-audio" accept="audio/*" hidden>
+        <input type="file" id="file-audio" accept="audio/*,.ncm,.flac,.mp3,.ogg,.opus,.wav,.m4a,.aac" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         <strong>拖入音频，或点击选择</strong>
-        <span>MP3 / FLAC / WAV / OGG / M4A / AAC / OPUS</span>
+        <span>MP3 / FLAC / WAV / OGG / M4A / AAC / OPUS / 网易云 .ncm</span>
       </label>
 
       <div class="filecard" id="fileinfo-audio" hidden>
         <span class="name" data-name></span>
         <span class="meta" data-meta></span>
         <button class="x" type="button" data-clear>换一个</button>
+      </div>
+
+      <div class="tags-editor" id="audio-tags" hidden>
+        <div class="cover-box">
+          <img id="audio-cover" alt="专辑封面" hidden>
+          <div class="cover-empty" id="audio-cover-empty">无封面</div>
+          <div class="cover-actions">
+            <button class="chip" type="button" id="audio-cover-pick">换封面</button>
+            <button class="chip" type="button" id="audio-cover-clear">移除</button>
+            <input type="file" id="audio-cover-file" accept="image/*" hidden>
+          </div>
+        </div>
+        <div class="tag-fields">
+          <label>标题<input type="text" id="audio-title" autocomplete="off" placeholder="歌曲标题"></label>
+          <label>艺术家<input type="text" id="audio-artist" autocomplete="off" placeholder="歌手 / 组合"></label>
+          <label>专辑<input type="text" id="audio-album" autocomplete="off" placeholder="专辑名"></label>
+          <p class="tech" id="audio-tech"></p>
+        </div>
       </div>
 
       <div class="wave-wrap" id="wave-wrap" hidden>
@@ -788,12 +883,15 @@
         <div class="field">
           <label for="audio-format">导出格式</label>
           <select id="audio-format">
-            <option value="wav" selected>WAV（无损 PCM）</option>
-            <option value="mp3">MP3（有损压缩）</option>
+            <option value="wav">WAV（无损 PCM）</option>
+            <option value="flac" disabled>FLAC（无损，原样保留）</option>
+            <option value="mp3" selected>MP3（有损压缩）</option>
+            <option value="ogg" disabled>OGG · Opus（有损压缩）</option>
           </select>
+          <span class="hint" id="audio-format-hint"></span>
         </div>
         <div class="field" id="audio-bitrate-field">
-          <label for="audio-bitrate">MP3 码率</label>
+          <label for="audio-bitrate">码率（MP3 / OGG）</label>
           <select id="audio-bitrate">
             <option value="320">320 kbps（最好）</option>
             <option value="256">256 kbps</option>
@@ -801,7 +899,7 @@
             <option value="128">128 kbps（最小）</option>
             <option value="96">96 kbps</option>
           </select>
-          <span class="hint">码率越低文件越小、损失越多；WAV 不支持压缩参数。</span>
+          <span class="hint">码率越低文件越小、损失越多；WAV / FLAC 不需要这个参数。</span>
         </div>
         <div class="field">
           <span class="lab">采样率</span>
@@ -841,7 +939,53 @@
         </div>
       </div>
 
-      <p class="note">解码用浏览器自带的解码器（能播就能读）。导出 MP3 依赖 <code>lamejs</code>，首次使用会从 CDN 加载约 100 KB；WAV 是完全无损的 PCM，体积较大（每分钟约 5–10 MB）。</p>
+      <p class="note">解码用浏览器自带的解码器（能播就能读）。FLAC 只有在源文件本身就是 FLAC 时才能无损导出（浏览器没有 FLAC 编码器）；MP3 依赖 <code>lamejs</code>，首次使用会从 CDN 加载约 100 KB；OGG 使用 WebCodecs 的 Opus 编码器，不支持的浏览器会自动禁用该选项。封面与标题/艺术家/专辑会写进导出文件。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>网易云 NCM 批量解包</h2>
+        <p>一次拖入多个 .ncm 或整个文件夹，按每首歌自己的声道与码率导出，最后打包成 ZIP</p>
+      </div>
+
+      <label class="drop" id="drop-ncm">
+        <input type="file" id="file-ncm" accept=".ncm" multiple hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        <strong>拖入多个 .ncm，或点击选择</strong>
+        <span>也可以直接把一个文件夹拖进来，只处理其中的 .ncm</span>
+      </label>
+
+      <div class="ncm-actions">
+        <button class="btn ghost" type="button" id="ncm-pick-files">选择文件</button>
+        <button class="btn ghost" type="button" id="ncm-pick-dir">选择文件夹</button>
+        <span class="status" id="ncm-count"></span>
+        <input type="file" id="ncm-dir" webkitdirectory multiple hidden>
+      </div>
+
+      <div class="settings" id="ncm-settings">
+        <div class="field">
+          <label for="ncm-format">导出格式</label>
+          <select id="ncm-format">
+            <option value="auto" selected>原始（无损 FLAC 优先，没有就 MP3）</option>
+            <option value="flac">强制 FLAC</option>
+            <option value="mp3">强制 MP3</option>
+          </select>
+          <span class="hint" id="ncm-hint"></span>
+        </div>
+      </div>
+
+      <ul class="ncm-rows" id="ncm-rows" hidden></ul>
+
+      <div class="runbar">
+        <button class="btn primary" id="run-ncm" disabled>开始处理</button>
+        <button class="btn ghost" id="clear-ncm" hidden>清空列表</button>
+        <span class="status" id="status-ncm"></span>
+      </div>
+
+      <div class="progress" id="progress-ncm" hidden><i></i></div>
+      <div class="notice" id="notice-ncm" hidden></div>
+
+      <p class="note">全程本地处理，文件不上传。声道与采样率保持歌曲原样；强制 FLAC 时若源本身是有损 MP3，会保留原 MP3 并标注原因（浏览器没有 FLAC 编码器）。批量很大时注意内存占用。</p>
     </div>
   </section>
 

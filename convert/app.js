@@ -5,6 +5,7 @@ import { initImage } from './lib/image.js';
 import { initVideo } from './lib/video.js';
 import { initAnim } from './lib/anim.js';
 import { initAudio } from './lib/audio.js';
+import { initNcmBatch } from './lib/ncm-batch.js';
 import { initDoc } from './lib/doc.js';
 import { initFavicon } from './lib/favicon.js';
 
@@ -12,7 +13,7 @@ const TABS = {
   image: { init: initImage, title: '图片转换' },
   video: { init: initVideo, title: '视频转码' },
   anim: { init: initAnim, title: '视频与动图互转' },
-  audio: { init: initAudio, title: '音频转换与裁剪' },
+  audio: { init: () => { initAudio(); initNcmBatch(); }, title: '音频转换与裁剪' },
   doc: { init: initDoc, title: '文档与 PDF 互转' },
   favicon: { init: initFavicon, title: '图片转 favicon' },
 };
