@@ -180,6 +180,30 @@ tr:hover {
 .footer-note a:hover {
     color:#bae6fd;
 }
+/* 首屏加载提示：脚本还在跑的时候先给点反馈，避免白屏 */
+.boot-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 72px 20px;
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+.boot-spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(125, 211, 252, 0.25);
+    border-top-color: #7dd3fc;
+    animation: boot-spin 0.75s linear infinite;
+}
+@keyframes boot-spin {
+    to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .boot-spinner { animation-duration: 2.4s; }
+}
 </style>
 </head>
 <body>
@@ -236,6 +260,11 @@ tr:hover {
         </section>
     </noscript>
 
+    <div class="boot-loading" id="bootLoading" role="status" aria-live="polite">
+        <span class="boot-spinner" aria-hidden="true"></span>
+        <span>正在加载…</span>
+    </div>
+
     <div id="jsContent" style="display:none;">
         <section class="glass-card">
             <h2>🛡️ JS & 隐私 & 广告拦截检测</h2>
@@ -281,7 +310,7 @@ tr:hover {
     </div>
 
     <div class="footer-note">
-        源码位置：<a target="_blank" rel="noopener noreferrer" href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html">https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/sysinfo/index.html">Github源码</a>
     </div>
 </div>
 <script>
@@ -759,15 +788,32 @@ window.getMediaDevice = async function() {
     }
 }
 
-runAllDetect();
-startAdDetect();
-startUADetect();
-startWebGPU();
-startWebGL();
-startBaseInfo();
-startNetInfo();
-startScreenInfo();
-startBattery();
+/* 先把「正在加载」画出来，再跑检测：检测有几百毫秒到一两秒的同步开销，
+   直接执行会白屏，用户以为页面卡死了。 */
+function pageBoot() {
+    try {
+        runAllDetect();
+        startAdDetect();
+        startUADetect();
+        startWebGPU();
+        startWebGL();
+        startBaseInfo();
+        startNetInfo();
+        startScreenInfo();
+        startBattery();
+    } finally {
+        const loading = document.getElementById('bootLoading');
+        if (loading) loading.remove();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(pageBoot, 0)));
+    });
+} else {
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(pageBoot, 0)));
+}
 </script>
 </body>
 </html>

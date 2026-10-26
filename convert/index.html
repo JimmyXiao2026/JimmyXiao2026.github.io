@@ -378,31 +378,15 @@
   /* 音频标签编辑 */
   .tags-editor {
     display: flex;
-    gap: 18px;
+    flex-direction: column;
+    gap: 14px;
     margin-top: 16px;
     padding: 14px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.035);
     border: 1px solid var(--stroke);
   }
-  .cover-box { flex: none; width: 132px; text-align: center; }
-  .cover-box img,
-  .cover-empty {
-    width: 132px;
-    height: 132px;
-    border-radius: 10px;
-    object-fit: cover;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--stroke);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-faint);
-    font-size: 0.78rem;
-  }
-  .cover-actions { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
-  .cover-actions .chip { padding: 4px 9px; font-size: 0.72rem; }
-  .tag-fields { flex: 1; min-width: 0; display: grid; gap: 9px; }
+  .tag-fields { display: grid; gap: 9px; }
   .tag-fields label { display: block; font-size: 0.74rem; color: var(--text-dim); }
   .tag-fields input {
     width: 100%;
@@ -419,8 +403,88 @@
   .tag-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,124,248,.16); }
   .tag-fields .tech { font-size: 0.74rem; color: var(--text-faint); line-height: 1.6; margin: 0; }
 
+  .pics-box { display: flex; flex-direction: column; gap: 10px; }
+  .pics { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pic-add-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pic-add-row select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--stroke);
+    background: rgba(12, 14, 26, .55);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.8rem;
+  }
+  .pic-card {
+    position: relative;
+    width: 116px;
+    margin: 0;
+    padding: 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--stroke);
+    text-align: center;
+  }
+  .pic-card img {
+    width: 104px;
+    height: 104px;
+    object-fit: cover;
+    border-radius: 7px;
+    display: block;
+    background: rgba(0, 0, 0, .25);
+  }
+  .pic-card select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 3px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--stroke);
+    background: rgba(12, 14, 26, .6);
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.7rem;
+  }
+  .pic-card .pic-del {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, .62);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .pic-card .pic-del:hover { background: #ef4444; }
+  .pics-empty { color: var(--text-faint); font-size: 0.76rem; }
+
+  /* 导入进度 */
+  .import-state { margin-top: 12px; display: flex; align-items: center; gap: 12px; }
+  .import-state .progress { flex: 1; margin: 0; }
+  .import-text { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+  .progress.indeterminate > i {
+    width: 34% !important;
+    animation: indeterminate 1.15s ease-in-out infinite;
+  }
+  @keyframes indeterminate {
+    0% { margin-left: -34%; }
+    100% { margin-left: 100%; }
+  }
+
+  /* 播放进度条 */
+  .seek-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .seek-row span {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+    min-width: 46px;
+  }
+  .seek-row input[type="range"] { flex: 1; }
+
   @media (max-width: 640px) {
-    .tags-editor { flex-direction: column; align-items: center; }
     .tag-fields { width: 100%; }
   }
 
@@ -842,6 +906,11 @@
         <span>MP3 / FLAC / WAV / OGG / M4A / AAC / OPUS / 网易云 .ncm</span>
       </label>
 
+      <div class="import-state" id="audio-import" hidden>
+        <div class="progress indeterminate"><i></i></div>
+        <span class="import-text" id="audio-import-text">正在导入…</span>
+      </div>
+
       <div class="filecard" id="fileinfo-audio" hidden>
         <span class="name" data-name></span>
         <span class="meta" data-meta></span>
@@ -849,25 +918,35 @@
       </div>
 
       <div class="tags-editor" id="audio-tags" hidden>
-        <div class="cover-box">
-          <img id="audio-cover" alt="专辑封面" hidden>
-          <div class="cover-empty" id="audio-cover-empty">无封面</div>
-          <div class="cover-actions">
-            <button class="chip" type="button" id="audio-cover-pick">换封面</button>
-            <button class="chip" type="button" id="audio-cover-clear">移除</button>
-            <input type="file" id="audio-cover-file" accept="image/*" hidden>
-          </div>
-        </div>
         <div class="tag-fields">
           <label>标题<input type="text" id="audio-title" autocomplete="off" placeholder="歌曲标题"></label>
           <label>艺术家<input type="text" id="audio-artist" autocomplete="off" placeholder="歌手 / 组合"></label>
           <label>专辑<input type="text" id="audio-album" autocomplete="off" placeholder="专辑名"></label>
           <p class="tech" id="audio-tech"></p>
         </div>
+        <div class="pics-box">
+          <div class="pics" id="audio-pics"></div>
+          <div class="pic-add-row">
+            <select id="audio-pic-type" aria-label="新图片用途">
+              <option value="3">正面封面</option>
+              <option value="4">封底</option>
+              <option value="8">艺人图</option>
+              <option value="18">插图</option>
+              <option value="0">其他</option>
+            </select>
+            <button class="chip" type="button" id="audio-pic-add">添加图片</button>
+            <input type="file" id="audio-pic-file" accept="image/*" multiple hidden>
+          </div>
+        </div>
       </div>
 
       <div class="wave-wrap" id="wave-wrap" hidden>
         <canvas id="wave" width="1200" height="240" aria-label="音频波形，可拖动选择裁剪区间"></canvas>
+        <div class="seek-row">
+          <span id="seek-cur">0:00.0</span>
+          <input type="range" id="audio-seek" min="0" max="1000" step="1" value="0" aria-label="播放位置">
+          <span id="seek-dur">0:00.0</span>
+        </div>
         <div class="audio-tools">
           <button class="btn ghost" type="button" id="audio-play">试听选中</button>
           <span class="time-pill" id="audio-sel">0:00.00 — 0:00.00</span>
@@ -876,7 +955,7 @@
             <button class="btn ghost" type="button" id="audio-reset">重置</button>
           </div>
         </div>
-        <p class="note" style="margin-top:10px">拖动两端的手柄决定裁剪区间；在选区中间拖动可以整体平移。</p>
+        <p class="note" style="margin-top:10px">拖动两端的手柄决定裁剪区间；在选区中间拖动可以整体平移；上方进度条可以拖动播放位置。</p>
       </div>
 
       <div class="settings" id="settings-audio" hidden>
@@ -887,11 +966,12 @@
             <option value="flac" disabled>FLAC（无损，原样保留）</option>
             <option value="mp3" selected>MP3（有损压缩）</option>
             <option value="ogg" disabled>OGG · Opus（有损压缩）</option>
+            <option value="m4a" disabled>M4A · AAC（有损压缩）</option>
           </select>
           <span class="hint" id="audio-format-hint"></span>
         </div>
         <div class="field" id="audio-bitrate-field">
-          <label for="audio-bitrate">码率（MP3 / OGG）</label>
+          <label for="audio-bitrate">码率（MP3 / OGG / M4A）</label>
           <select id="audio-bitrate">
             <option value="320">320 kbps（最好）</option>
             <option value="256">256 kbps</option>
@@ -944,15 +1024,15 @@
 
     <div class="card">
       <div class="card-head">
-        <h2>网易云 NCM 批量解包</h2>
-        <p>一次拖入多个 .ncm 或整个文件夹，按每首歌自己的声道与码率导出，最后打包成 ZIP</p>
+        <h2>批量转换</h2>
+        <p>一次拖入多个音频或整个文件夹（含网易云 .ncm），按每首歌自己的声道与采样率转换，最后打包成 ZIP</p>
       </div>
 
       <label class="drop" id="drop-ncm">
-        <input type="file" id="file-ncm" accept=".ncm" multiple hidden>
+        <input type="file" id="file-ncm" accept=".ncm,.flac,.mp3,.wav,.ogg,.oga,.opus,.m4a,.aac,audio/*" multiple hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-        <strong>拖入多个 .ncm，或点击选择</strong>
-        <span>也可以直接把一个文件夹拖进来，只处理其中的 .ncm</span>
+        <strong>拖入音频 / .ncm，或点击选择</strong>
+        <span>可以多选，也可以直接把一个文件夹拖进来</span>
       </label>
 
       <div class="ncm-actions">
@@ -966,9 +1046,10 @@
         <div class="field">
           <label for="ncm-format">导出格式</label>
           <select id="ncm-format">
-            <option value="auto" selected>原始（无损 FLAC 优先，没有就 MP3）</option>
+            <option value="auto" selected>原始（保持源格式）</option>
             <option value="flac">强制 FLAC</option>
             <option value="mp3">强制 MP3</option>
+            <option value="ogg">统一 OGG（Opus）</option>
           </select>
           <span class="hint" id="ncm-hint"></span>
         </div>
@@ -1135,6 +1216,10 @@
   </section>
 
   <p class="note" style="margin-top:26px">所有处理都在你的浏览器里完成，文件不会上传到任何服务器。转换中途关掉页面就前功尽弃，大文件请留够内存。</p>
+
+  <p class="note" style="margin-top:10px; text-align:center">
+    <a href="https://github.com/JimmyXiao2026/JimmyXiao2026.github.io/blob/main/convert/index.html" target="_blank" rel="noopener">Github源码</a>
+  </p>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

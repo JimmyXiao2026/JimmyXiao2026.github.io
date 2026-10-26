@@ -83,10 +83,11 @@ function readFlacPictureBlock(data) {
 
 function parseVorbisComments(data) {
   const out = {};
+  const all = {};
   let o = 0;
-  if (o + 4 > data.length) return out;
+  if (o + 4 > data.length) return { tags: out, comments: [], all };
   const vendorLen = readU32LE(data, o); o += 4 + vendorLen;
-  if (o + 4 > data.length) return out;
+  if (o + 4 > data.length) return { tags: out, comments: [], all };
   const count = readU32LE(data, o); o += 4;
   const comments = [];
   for (let i = 0; i < count && o + 4 <= data.length; i += 1) {
@@ -100,14 +101,15 @@ function parseVorbisComments(data) {
       const key = text.slice(0, eq).toUpperCase();
       const value = text.slice(eq + 1);
       if (!out[key]) out[key] = value;
+      (all[key] = all[key] || []).push(value);
     }
   }
-  return { tags: out, comments };
+  return { tags: out, comments, all };
 }
 
 function readFlacTags(bytes) {
   let o = 4;
-  const result = { tags: {}, picture: null, sampleRate: 0, channels: 0, bits: 0, lossless: true };
+  const result = { tags: {}, picture: null, pictures: [], sampleRate: 0, channels: 0, bits: 0, lossless: true };
   while (o + 4 <= bytes.length) {
     const header = bytes[o];
     const type = header & 0x7f;
@@ -125,11 +127,12 @@ function readFlacTags(bytes) {
       result.tags = parsed.tags || {};
     } else if (type === 6) {
       const pic = readFlacPictureBlock(data);
-      if (pic && (!result.picture || pic.type === 3)) result.picture = pic;
+      if (pic) result.pictures.push(pic);
     }
     o += 4 + len;
     if (last) break;
   }
+  result.picture = result.pictures.find((p) => p.type === 3) || result.pictures[0] || null;
   return result;
 }
 
@@ -154,7 +157,7 @@ function readId3FrameText(data) {
 }
 
 function readId3(bytes) {
-  const out = { tags: {}, picture: null };
+  const out = { tags: {}, picture: null, pictures: [] };
   if (ascii(bytes, 0, 3) !== 'ID3') return out;
   const version = bytes[3];
   const size = syncsafe(bytes, 6);
@@ -192,12 +195,13 @@ function readId3(bytes) {
         p += 1;
       }
       const picBytes = data.slice(p);
-      if (picBytes.length > 8 && (!out.picture || picType === 3)) {
-        out.picture = { mime: mime || 'image/jpeg', bytes: picBytes, type: picType };
+      if (picBytes.length > 8) {
+        out.pictures.push({ mime: mime || 'image/jpeg', bytes: picBytes, type: picType });
       }
     }
     o += 10 + frameSize;
   }
+  out.picture = out.pictures.find((pic) => pic.type === 3) || out.pictures[0] || null;
   return out;
 }
 
@@ -235,13 +239,14 @@ function iterOggPackets(bytes, maxPackets) {
 }
 
 function readOggTags(bytes) {
-  const out = { tags: {}, picture: null, sampleRate: 48000, channels: 2 };
+  const out = { tags: {}, picture: null, pictures: [], sampleRate: 48000, channels: 2 };
   const packets = iterOggPackets(bytes, 3);
 
   if (packets[0] && ascii(packets[0], 0, 8) === 'OpusHead') {
     out.channels = packets[0][9] || 2;
   }
 
+  let all = {};
   const comment = packets[1];
   if (comment) {
     let parsed = null;
@@ -253,19 +258,21 @@ function readOggTags(bytes) {
     if (parsed) {
       out.tags = parsed.tags || {};
       out.comments = parsed.comments || [];
+      all = parsed.all || {};
     }
   }
 
-  const picB64 = out.tags.METADATA_BLOCK_PICTURE;
-  if (picB64) {
+  const picList = all.METADATA_BLOCK_PICTURE || (out.tags.METADATA_BLOCK_PICTURE ? [out.tags.METADATA_BLOCK_PICTURE] : []);
+  for (const picB64 of picList) {
     try {
       const bin = atob(picB64);
       const arr = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i += 1) arr[i] = bin.charCodeAt(i);
       const pic = readFlacPictureBlock(arr);
-      if (pic) out.picture = pic;
+      if (pic) out.pictures.push(pic);
     } catch { /* ignore */ }
   }
+  out.picture = out.pictures.find((p) => p.type === 3) || out.pictures[0] || null;
   return out;
 }
 
@@ -302,7 +309,7 @@ function readWavTags(bytes) {
 }
 
 function readMp4Tags(bytes) {
-  const out = { tags: {}, picture: null, sampleRate: 0, channels: 0 };
+  const out = { tags: {}, picture: null, pictures: [], sampleRate: 0, channels: 0 };
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
   function atoms(start, end) {
@@ -327,11 +334,13 @@ function readMp4Tags(bytes) {
   }
 
   function find(path, start, end) {
-    let current = [{ start, end }];
+    let current = [{ start, end, type: '' }];
     for (const name of path) {
       const next = [];
       for (const box of current) {
-        for (const atom of atoms(box.start, box.end)) {
+        // meta 是 full box，前面多 4 字节 version/flags
+        const offset = box.type === 'meta' ? 4 : 0;
+        for (const atom of atoms(box.start + offset, box.end)) {
           if (atom.type === name) next.push(atom);
         }
       }
@@ -361,22 +370,31 @@ function readMp4Tags(bytes) {
   if (!ilst) return out;
 
   for (const item of atoms(ilst.start, ilst.end)) {
+    if (item.type === 'covr') {
+      // covr 里可以塞多张图，每个 data 子块一张
+      for (const data of atoms(item.start, item.end).filter((a) => a.type === 'data')) {
+        const payload = bytes.subarray(data.start + 8, data.end);
+        const dataType = view.getUint32(data.start);
+        if (payload.length > 8) {
+          out.pictures.push({
+            type: 3,
+            mime: dataType === 14 ? 'image/png' : 'image/jpeg',
+            bytes: payload.slice(),
+            width: 0,
+            height: 0,
+          });
+        }
+      }
+      continue;
+    }
     const data = atoms(item.start, item.end).find((a) => a.type === 'data');
     if (!data) continue;
     const payload = bytes.subarray(data.start + 8, data.end);
-    const dataType = view.getUint32(data.start); // 1 = UTF-8, 13 = JPEG, 14 = PNG
     if (item.type === '\u00a9nam') out.tags.TITLE = decodeText(payload);
     else if (item.type === '\u00a9ART') out.tags.ARTIST = decodeText(payload);
     else if (item.type === '\u00a9alb') out.tags.ALBUM = decodeText(payload);
-    else if (item.type === 'covr' && payload.length) {
-      out.picture = {
-        mime: dataType === 14 ? 'image/png' : 'image/jpeg',
-        bytes: payload.slice(),
-        width: 0,
-        height: 0,
-      };
-    }
   }
+  out.picture = out.pictures[0] || null;
   return out;
 }
 
@@ -397,14 +415,22 @@ export function readAudioTags(bytes, name = '') {
   } catch { /* 读不出来就当没有标签 */ }
 
   const tags = info.tags || {};
+  const pictures = (info.pictures || (info.picture ? [info.picture] : []))
+    .filter((pic) => pic && pic.bytes && pic.bytes.length)
+    .map((pic) => ({
+      type: typeof pic.type === 'number' ? pic.type : 3,
+      bytes: pic.bytes,
+      mime: pic.mime || 'image/jpeg',
+      width: pic.width || 0,
+      height: pic.height || 0,
+    }));
   return {
     format,
     title: tags.TITLE || tags.title || '',
     artist: tags.ARTIST || tags.artist || '',
     album: tags.ALBUM || tags.album || '',
-    cover: info.picture
-      ? { bytes: info.picture.bytes, mime: info.picture.mime || 'image/jpeg', width: info.picture.width || 0, height: info.picture.height || 0 }
-      : null,
+    pictures,
+    cover: pictures.find((p) => p.type === 3) || pictures[0] || null,
     sampleRate: info.sampleRate || 0,
     channels: info.channels || 0,
     bits: info.bits || 0,
@@ -475,8 +501,8 @@ export function writeFlacTags(flacBytes, tags) {
 
   const blocks = kept.slice();
   blocks.push({ type: 4, data: makeVorbisComment(tags) });
-  if (tags.cover && tags.cover.bytes) {
-    blocks.push({ type: 6, data: makeFlacPicture(tags.cover) });
+  for (const pic of picturesOf(tags)) {
+    blocks.push({ type: 6, data: makeFlacPicture(pic) });
   }
 
   const parts = [utf8.encode('fLaC')];
@@ -491,6 +517,15 @@ export function writeFlacTags(flacBytes, tags) {
   });
   parts.push(audio);
   return concat(parts);
+}
+
+/** 统一取图片列表：优先 pictures，其次旧的单张 cover */
+export function picturesOf(tags) {
+  if (!tags) return [];
+  if (Array.isArray(tags.pictures)) {
+    return tags.pictures.filter((p) => p && p.bytes && p.bytes.length);
+  }
+  return tags.cover && tags.cover.bytes ? [tags.cover] : [];
 }
 
 /** 构造 ID3v2.3 标签（文本用 UTF-16 + BOM，兼容性最好） */
@@ -517,16 +552,16 @@ export function buildId3v23(tags) {
   textFrame('TPE1', tags.artist || '');
   textFrame('TALB', tags.album || '');
 
-  if (tags.cover && tags.cover.bytes) {
-    const mime = utf8.encode(tags.cover.mime || 'image/jpeg');
-    const body = new Uint8Array(1 + mime.length + 1 + 1 + 1 + tags.cover.bytes.length);
+  for (const pic of picturesOf(tags)) {
+    const mime = utf8.encode(pic.mime || 'image/jpeg');
+    const body = new Uint8Array(1 + mime.length + 1 + 1 + 1 + pic.bytes.length);
     let o = 0;
     body[o] = 0x00; o += 1;
     body.set(mime, o); o += mime.length;
     body[o] = 0x00; o += 1;
-    body[o] = 0x03; o += 1; // front cover
+    body[o] = pic.type || 3; o += 1; // 3 正面 / 4 封底 / 8 艺人 / 18 插图
     body[o] = 0x00; o += 1; // empty description
-    body.set(tags.cover.bytes, o);
+    body.set(pic.bytes, o);
     const head = new Uint8Array(10);
     head.set([0x41, 0x50, 0x49, 0x43], 0); // APIC
     writeU32BE(head, 4, body.length);
@@ -568,6 +603,96 @@ export function writeWavTags(wavBytes, tags) {
   // 更新 RIFF 总长度
   writeU32LE(out, 4, out.length - 8);
   return out;
+}
+
+/* ------------------------------------------------------------------ MP4 / M4A */
+
+function u32be(n) {
+  const b = new Uint8Array(4);
+  writeU32BE(b, 0, n);
+  return b;
+}
+
+function mp4Box(type, payload) {
+  const out = new Uint8Array(8 + payload.length);
+  writeU32BE(out, 0, out.length);
+  for (let i = 0; i < 4; i += 1) out[4 + i] = type.charCodeAt(i);
+  out.set(payload, 8);
+  return out;
+}
+
+function mp4DataAtom(typeCode, payload) {
+  return mp4Box('data', concat([u32be(typeCode), u32be(0), payload]));
+}
+
+function mp4Boxes(bytes, start, end) {
+  const list = [];
+  let o = start;
+  while (o + 8 <= end) {
+    let size = readU32BE(bytes, o);
+    const type = ascii(bytes, o + 4, 4);
+    let header = 8;
+    if (size === 1) {
+      if (o + 16 > end) break;
+      size = Number((BigInt(readU32BE(bytes, o + 8)) << 32n) | BigInt(readU32BE(bytes, o + 12)));
+      header = 16;
+    } else if (size === 0) {
+      size = end - o;
+    }
+    if (size < header || o + size > end) break;
+    list.push({ type, start: o, end: o + size, headerLen: header });
+    o += size;
+  }
+  return list;
+}
+
+/**
+ * 往 M4A 里写 iTunes 元数据（title / artist / album / 封面）。
+ * 只在 moov 位于文件末尾时使用（mp4-muxer 的 fastStart:false），
+ * 这样改动只影响 mdat 之后的字节，不会破坏 stco 里的采样偏移。
+ */
+export function writeMp4Tags(mp4Bytes, tags) {
+  const boxes = mp4Boxes(mp4Bytes, 0, mp4Bytes.length);
+  const moov = boxes.find((b) => b.type === 'moov');
+  if (!moov) return mp4Bytes;
+
+  const items = [];
+  const text = (type, value) => {
+    if (value) items.push(mp4Box(type, mp4DataAtom(1, utf8.encode(value))));
+  };
+  text('\u00a9nam', tags.title);
+  text('\u00a9ART', tags.artist);
+  text('\u00a9alb', tags.album);
+
+  const pics = picturesOf(tags);
+  if (pics.length) {
+    const parts = pics.map((pic) => mp4DataAtom(pic.mime === 'image/png' ? 14 : 13, pic.bytes));
+    items.push(mp4Box('covr', concat(parts)));
+  }
+  if (!items.length) return mp4Bytes;
+
+  const hdlr = mp4Box('hdlr', concat([
+    u32be(0),
+    utf8.encode('mdir'),
+    new Uint8Array(12),
+    new Uint8Array(1),
+  ]));
+  const ilst = mp4Box('ilst', concat(items));
+  const meta = mp4Box('meta', concat([u32be(0), hdlr, ilst]));
+  const udta = mp4Box('udta', meta);
+
+  const children = mp4Boxes(mp4Bytes, moov.start + moov.headerLen, moov.end)
+    .filter((b) => b.type !== 'udta');
+  const newMoov = mp4Box('moov', concat([
+    ...children.map((b) => mp4Bytes.subarray(b.start, b.end)),
+    udta,
+  ]));
+
+  return concat([
+    mp4Bytes.subarray(0, moov.start),
+    newMoov,
+    mp4Bytes.subarray(moov.end),
+  ]);
 }
 
 export { makeVorbisComment, parseVorbisComments };

@@ -13,7 +13,7 @@ const TABS = {
   image: { init: initImage, title: '图片转换' },
   video: { init: initVideo, title: '视频转码' },
   anim: { init: initAnim, title: '视频与动图互转' },
-  audio: { init: () => { initAudio(); initNcmBatch(); }, title: '音频转换与裁剪' },
+  audio: { init: () => { initAudio(); initNcmBatch(); }, title: '音频转换与批量' },
   doc: { init: initDoc, title: '文档与 PDF 互转' },
   favicon: { init: initFavicon, title: '图片转 favicon' },
 };

@@ -170,11 +170,12 @@
   .tagline .code { color: var(--accent-2); font-weight: 600; }
 
   .intro {
-    max-width: 560px;
+    max-width: 720px;
     margin: 18px auto 0;
     color: var(--text-dim);
     font-size: 0.95rem;
     line-height: 1.75;
+    text-wrap: pretty;
   }
 
   .actions {
@@ -380,6 +381,36 @@
     .tag { font-size: 0.78rem; }
     .card { padding: 22px; }
   }
+
+  /* QQ 图标：CDN 上是深色图标，统一刷成白色才看得清 */
+  .btn .qq-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+  }
+
+  .qq-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translate(-50%, 18px);
+    padding: 11px 20px;
+    border-radius: 12px;
+    background: rgba(16, 18, 32, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--text);
+    font-size: 0.88rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 60;
+  }
+  .qq-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 </style>
 <noscript>
   <style>
@@ -453,6 +484,10 @@
           <path d="M22 2 15 22l-4-9-9-4 20-7z" />
         </svg>
         联系
+      </a>
+      <a class="btn" href="#" id="qq-btn" title="QQ：2515795967">
+        <img class="qq-icon" src="https://cdn.jsdelivr.net/npm/@coreui/icons@3.1.0/svg/brand/cib-qq.svg" alt="QQ" width="18" height="18">
+        QQ
       </a>
     </div>
   </section>
@@ -731,6 +766,70 @@ window.setTimeout(function () {
   var els = document.querySelectorAll('.reveal');
   for (var i = 0; i < els.length; i++) els[i].classList.add('in');
 }, 3000);
+</script>
+
+<!-- 联系方式：QQ -->
+<script>
+(function () {
+  var QQ = '2515795967';
+  var btn = document.getElementById('qq-btn');
+  if (!btn) return;
+
+  var toast = document.createElement('div');
+  toast.id = 'qq-toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.className = 'qq-toast';
+  document.body.appendChild(toast);
+  var hideTimer = null;
+
+  function say(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    var ua = navigator.userAgent || '';
+    if (/iPhone|iPad/i.test(ua)) {
+      // 手机 QQ：直接打开名片
+      window.location.href = 'mqqapi://card/show_pslcard?src_type=internal&version=1&uin=' + QQ
+        + '&card_type=person&source=sharecard';
+      return;
+    }
+    if (/Windows NT/i.test(ua)) {
+      // Windows 桌面 QQ：拉起加好友窗口
+      window.location.href = 'tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=' + QQ;
+      return;
+    }
+    copyText(QQ)
+      .then(function () { say('QQ 号已复制：' + QQ); })
+      .catch(function () { say('QQ 号：' + QQ + '（复制失败，请手动复制）'); });
+  });
+})();
 </script>
 
 </body>

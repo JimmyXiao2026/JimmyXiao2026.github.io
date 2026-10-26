@@ -101,17 +101,18 @@ function buildOpusHead(channels, sampleRate, preSkip = 312) {
   return head;
 }
 
-function buildOpusTags(tags, cover) {
+function buildOpusTags(tags, pictures) {
   const vendor = utf8.encode('JimmyXiao Format Converter');
   const comments = [];
   if (tags.title) comments.push('TITLE=' + tags.title);
   if (tags.artist) comments.push('ARTIST=' + tags.artist);
   if (tags.album) comments.push('ALBUM=' + tags.album);
-  if (cover && cover.bytes) {
-    const pic = makeFlacPicture(cover);
+  for (const pic of pictures || []) {
+    if (!pic || !pic.bytes) continue;
+    const block = makeFlacPicture(pic);
     let bin = '';
-    for (let i = 0; i < pic.length; i += 0x8000) {
-      bin += String.fromCharCode.apply(null, pic.subarray(i, i + 0x8000));
+    for (let i = 0; i < block.length; i += 0x8000) {
+      bin += String.fromCharCode.apply(null, block.subarray(i, i + 0x8000));
     }
     comments.push('METADATA_BLOCK_PICTURE=' + btoa(bin));
   }
@@ -220,7 +221,7 @@ export async function encodeOggOpus(audio, options = {}) {
 
   const head = description && description.length >= 19 ? description : buildOpusHead(channels, sampleRate);
   const preSkip = head.length >= 12 ? (head[10] | (head[11] << 8)) : 312;
-  const tags = buildOpusTags(options.tags || {}, options.cover || null);
+  const tags = buildOpusTags(options.tags || {}, options.pictures || (options.cover ? [options.cover] : []));
 
   const serial = Math.floor(Math.random() * 0xffffffff) >>> 0;
   const pages = [];

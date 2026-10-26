@@ -9,7 +9,7 @@ import {
   $, appendMeta, bindDrop, clamp, clearNode, download, fmtBytes, fmtTime,
   loadScript, LIBS, setBusy, setFieldVisible, showError, toast, baseName,
 } from './ui.js';
-import { readAudioTags, writeFlacTags, writeMp3Tags, writeWavTags, sniffFormat, stripId3 } from './audio-meta.js';
+import { readAudioTags, writeFlacTags, writeMp3Tags, writeWavTags, writeMp4Tags, sniffFormat, stripId3 } from './audio-meta.js';
 import { isNcm, parseNcm } from './ncm.js';
 import { encodeOggOpus } from './ogg-opus.js';
 
@@ -122,6 +122,84 @@ function fmtBitrate(bps) {
   return Math.round(bps / 1000) + ' kbps';
 }
 
+/* ---------------- M4A（AAC + MP4 封装） ---------------- */
+
+let mp4MuxerModule = null;
+
+async function loadMp4Muxer() {
+  if (mp4MuxerModule) return mp4MuxerModule;
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.mjs',
+    'https://fastly.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.mjs',
+    'https://unpkg.com/mp4-muxer@5.2.1/build/mp4-muxer.mjs',
+  ];
+  for (const url of urls) {
+    try {
+      mp4MuxerModule = await import(url);
+      return mp4MuxerModule;
+    } catch { /* 换下一个 CDN */ }
+  }
+  throw new Error('MP4 封装库加载失败（首次使用需要联网）');
+}
+
+async function encodeM4a(audioBuffer, kbps, onProgress) {
+  if (typeof AudioEncoder === 'undefined') throw new Error('当前浏览器不支持 AAC 编码');
+  const { Muxer, ArrayBufferTarget } = await loadMp4Muxer();
+
+  const channels = Math.min(2, audioBuffer.numberOfChannels);
+  const sampleRate = audioBuffer.sampleRate;
+  const config = { codec: 'mp4a.40.2', sampleRate, numberOfChannels: channels, bitrate: Math.round(kbps * 1000) };
+  const supported = await AudioEncoder.isConfigSupported(config).catch(() => ({ supported: false }));
+  if (!supported.supported) throw new Error('当前浏览器不支持 AAC 编码');
+
+  const muxer = new Muxer({
+    target: new ArrayBufferTarget(),
+    audio: { codec: 'aac', numberOfChannels: channels, sampleRate },
+    fastStart: false, // moov 放末尾，后面写标签才安全
+  });
+
+  let encoderError = null;
+  const encoder = new AudioEncoder({
+    output: (chunk, meta) => {
+      try { muxer.addAudioChunk(chunk, meta); } catch (err) { encoderError = err; }
+    },
+    error: (err) => { encoderError = err; },
+  });
+  encoder.configure(config);
+
+  const pcm = [];
+  for (let c = 0; c < channels; c += 1) pcm.push(audioBuffer.getChannelData(c));
+  const frames = pcm[0].length;
+  const block = 1024;
+
+  for (let offset = 0; offset < frames; offset += block) {
+    if (encoderError) throw encoderError;
+    const n = Math.min(block, frames - offset);
+    const data = new Float32Array(n * channels);
+    for (let c = 0; c < channels; c += 1) {
+      data.set(pcm[c].subarray(offset, offset + n), c * n);
+    }
+    const audioData = new AudioData({
+      format: 'f32-planar',
+      sampleRate,
+      numberOfFrames: n,
+      numberOfChannels: channels,
+      timestamp: Math.round((offset / sampleRate) * 1e6),
+      data,
+    });
+    encoder.encode(audioData);
+    audioData.close();
+    if (onProgress && offset % (block * 200) === 0) onProgress(offset / frames);
+  }
+
+  await encoder.flush();
+  encoder.close();
+  if (encoderError) throw encoderError;
+  muxer.finalize();
+  if (onProgress) onProgress(1);
+  return new Uint8Array(muxer.target.buffer);
+}
+
 /* ------------------------------------------------------------------ 模块 */
 
 export function initAudio() {
@@ -135,18 +213,22 @@ export function initAudio() {
     name: $('[data-name]', root),
     meta: $('[data-meta]', root),
     clear: $('[data-clear]', root),
+    importBox: $('#audio-import', root),
+    importText: $('#audio-import-text', root),
     tagsEditor: $('#audio-tags', root),
-    cover: $('#audio-cover', root),
-    coverEmpty: $('#audio-cover-empty', root),
-    coverPick: $('#audio-cover-pick', root),
-    coverClear: $('#audio-cover-clear', root),
-    coverFile: $('#audio-cover-file', root),
+    pics: $('#audio-pics', root),
+    picType: $('#audio-pic-type', root),
+    picAdd: $('#audio-pic-add', root),
+    picFile: $('#audio-pic-file', root),
     title: $('#audio-title', root),
     artist: $('#audio-artist', root),
     album: $('#audio-album', root),
     tech: $('#audio-tech', root),
     waveWrap: $('#wave-wrap', root),
     canvas: $('#wave', root),
+    seek: $('#audio-seek', root),
+    seekCur: $('#seek-cur', root),
+    seekDur: $('#seek-dur', root),
     selLabel: $('#audio-sel', root),
     play: $('#audio-play', root),
     all: $('#audio-all', root),
@@ -183,9 +265,10 @@ export function initAudio() {
   let sourceFormat = '';
   let sourceRate = 0;
   let sourceChannels = 0;
-  let tags = { title: '', artist: '', album: '', cover: null };
-  let coverUrl = '';
+  let tags = { title: '', artist: '', album: '', pictures: [] };
+  let picUrls = [];
   let oggSupported = false;
+  let m4aSupported = false;
 
   const duration = () => (buffer ? buffer.duration : 0);
 
@@ -207,8 +290,14 @@ export function initAudio() {
     } catch {
       oggSupported = false;
     }
-    const option = ui.format.querySelector('option[value="ogg"]');
-    if (option) option.disabled = !oggSupported;
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported) {
+      m4aSupported = MediaRecorder.isTypeSupported('audio/mp4;codecs=mp4a.40.2')
+        || MediaRecorder.isTypeSupported('audio/mp4');
+    }
+    const oggOption = ui.format.querySelector('option[value="ogg"]');
+    if (oggOption) oggOption.disabled = !oggSupported;
+    const m4aOption = ui.format.querySelector('option[value="m4a"]');
+    if (m4aOption) m4aOption.disabled = !m4aSupported;
   })();
 
   /* ---------------- 波形 ---------------- */
@@ -346,7 +435,7 @@ export function initAudio() {
   ui.canvas.addEventListener('pointerup', endDrag);
   ui.canvas.addEventListener('pointercancel', endDrag);
 
-  /* ---------------- 试听 ---------------- */
+  /* ---------------- 试听 / 播放进度 ---------------- */
 
   function stopPlayback() {
     if (source) {
@@ -355,31 +444,72 @@ export function initAudio() {
       source = null;
     }
     playhead = null;
+    syncSeek();
     draw();
     ui.play.textContent = '试听选中';
   }
 
-  ui.play.addEventListener('click', () => {
+  function syncSeek() {
+    const total = duration();
+    const mmss = (value) => {
+      const sec = Math.max(0, value || 0);
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    };
+    if (ui.seek) {
+      const ratio = total && playhead != null ? clamp(playhead / total, 0, 1) : 0;
+      ui.seek.value = String(Math.round(ratio * 1000));
+    }
+    if (ui.seekCur) ui.seekCur.textContent = mmss(playhead);
+    if (ui.seekDur) ui.seekDur.textContent = mmss(total);
+  }
+
+  function startPlayback(from) {
     if (!buffer || !sel) return;
-    if (source) { stopPlayback(); return; }
     const ac = ensureCtx();
     source = ac.createBufferSource();
     source.buffer = buffer;
     source.connect(ac.destination);
     const startAt = ac.currentTime;
-    const offset = sel.start;
-    source.start(0, offset, sel.end - sel.start);
+    const offset = clamp(from == null ? sel.start : from, sel.start, Math.max(sel.start, sel.end - 0.02));
+    source.start(0, offset, sel.end - offset);
     ui.play.textContent = '停止';
     const tick = () => {
       if (!source) return;
       const t = offset + (ac.currentTime - startAt);
       playhead = Math.min(sel.end, t);
+      syncSeek();
       draw();
       if (t < sel.end) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
     source.onended = () => stopPlayback();
+  }
+
+  ui.play.addEventListener('click', () => {
+    if (!buffer || !sel) return;
+    if (source) { stopPlayback(); return; }
+    const from = playhead != null && playhead > sel.start && playhead < sel.end ? playhead : sel.start;
+    startPlayback(from);
   });
+
+  // 拖动进度条：播放中就跳到那个位置继续播，没在播就只移动播放线
+  if (ui.seek) {
+    ui.seek.addEventListener('input', () => {
+      if (!buffer) return;
+      const target = (Number(ui.seek.value) / 1000) * duration();
+      if (source) {
+        stopPlayback();
+        playhead = target;
+        startPlayback(target);
+      } else {
+        playhead = target;
+        syncSeek();
+        draw();
+      }
+    });
+  }
 
   const selectAll = () => {
     if (!buffer) return;
@@ -390,21 +520,70 @@ export function initAudio() {
   ui.all.addEventListener('click', selectAll);
   ui.reset.addEventListener('click', selectAll);
 
-  /* ---------------- 标签编辑 ---------------- */
+  /* ---------------- 标签与图片 ---------------- */
 
-  function renderCover() {
-    if (coverUrl) { URL.revokeObjectURL(coverUrl); coverUrl = ''; }
-    const cover = tags.cover;
-    if (cover && cover.bytes) {
-      coverUrl = URL.createObjectURL(new Blob([cover.bytes], { type: cover.mime || 'image/jpeg' }));
-      ui.cover.src = coverUrl;
-      ui.cover.hidden = false;
-      ui.coverEmpty.hidden = true;
-    } else {
-      ui.cover.removeAttribute('src');
-      ui.cover.hidden = true;
-      ui.coverEmpty.hidden = false;
+  const PIC_TYPES = [
+    { value: 3, label: '正面封面' },
+    { value: 4, label: '封底' },
+    { value: 8, label: '艺人图' },
+    { value: 18, label: '插图' },
+    { value: 0, label: '其他' },
+  ];
+
+  function releasePicUrls() {
+    picUrls.forEach((url) => URL.revokeObjectURL(url));
+    picUrls = [];
+  }
+
+  function renderPictures() {
+    releasePicUrls();
+    clearNode(ui.pics);
+    if (!tags.pictures.length) {
+      const empty = document.createElement('p');
+      empty.className = 'pics-empty';
+      empty.textContent = '没有内嵌图片，可以用下面「添加图片」补上正面封面 / 封底 / 艺人图 / 插图。';
+      ui.pics.append(empty);
+      return;
     }
+
+    tags.pictures.forEach((pic, index) => {
+      const card = document.createElement('figure');
+      card.className = 'pic-card';
+
+      const img = document.createElement('img');
+      const url = URL.createObjectURL(new Blob([pic.bytes], { type: pic.mime || 'image/jpeg' }));
+      picUrls.push(url);
+      img.src = url;
+      img.alt = '图片 ' + (index + 1);
+      img.loading = 'lazy';
+
+      const select = document.createElement('select');
+      select.setAttribute('aria-label', '图片用途');
+      for (const item of PIC_TYPES) {
+        const option = document.createElement('option');
+        option.value = String(item.value);
+        option.textContent = item.label;
+        if ((pic.type || 3) === item.value) option.selected = true;
+        select.append(option);
+      }
+      select.addEventListener('change', () => {
+        pic.type = Number(select.value) || 0;
+      });
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'pic-del';
+      del.title = '移除这张图';
+      del.setAttribute('aria-label', '移除这张图');
+      del.textContent = '×';
+      del.addEventListener('click', () => {
+        tags.pictures.splice(index, 1);
+        renderPictures();
+      });
+
+      card.append(img, select, del);
+      ui.pics.append(card);
+    });
   }
 
   function setTags(next) {
@@ -412,60 +591,68 @@ export function initAudio() {
       title: next.title || '',
       artist: next.artist || '',
       album: next.album || '',
-      cover: next.cover || null,
+      pictures: (next.pictures || []).map((pic) => ({ ...pic })),
     };
     ui.title.value = tags.title;
     ui.artist.value = tags.artist;
     ui.album.value = tags.album;
-    renderCover();
+    renderPictures();
   }
 
   ui.title.addEventListener('input', () => { tags.title = ui.title.value; });
   ui.artist.addEventListener('input', () => { tags.artist = ui.artist.value; });
   ui.album.addEventListener('input', () => { tags.album = ui.album.value; });
 
-  ui.coverPick.addEventListener('click', () => ui.coverFile.click());
-  ui.coverClear.addEventListener('click', () => {
-    tags.cover = null;
-    renderCover();
-  });
-  ui.coverFile.addEventListener('change', async () => {
-    const f = ui.coverFile.files && ui.coverFile.files[0];
-    ui.coverFile.value = '';
-    if (!f) return;
-    try {
-      const bytes = new Uint8Array(await f.arrayBuffer());
-      let width = 0;
-      let height = 0;
+  ui.picAdd.addEventListener('click', () => ui.picFile.click());
+  ui.picFile.addEventListener('change', async () => {
+    const files = Array.from(ui.picFile.files || []);
+    ui.picFile.value = '';
+    if (!files.length) return;
+    const type = Number(ui.picType.value) || 3;
+    for (const pic of files) {
       try {
-        const bmp = await createImageBitmap(new Blob([bytes], { type: f.type || 'image/jpeg' }));
-        width = bmp.width;
-        height = bmp.height;
-        bmp.close && bmp.close();
-      } catch { /* 尺寸拿不到也不影响写标签 */ }
-      tags.cover = { bytes, mime: f.type || 'image/jpeg', width, height };
-      renderCover();
-      toast('封面已更新', 'ok');
-    } catch (err) {
-      showError(ui.notice, err);
+        const bytes = new Uint8Array(await pic.arrayBuffer());
+        let width = 0;
+        let height = 0;
+        try {
+          const bmp = await createImageBitmap(new Blob([bytes], { type: pic.type || 'image/jpeg' }));
+          width = bmp.width;
+          height = bmp.height;
+          if (bmp.close) bmp.close();
+        } catch { /* 尺寸拿不到也不影响写标签 */ }
+        tags.pictures.push({ type, bytes, mime: pic.type || 'image/jpeg', width, height });
+      } catch (err) {
+        showError(ui.notice, err);
+      }
     }
+    renderPictures();
+    toast(`已添加 ${files.length} 张图片`, 'ok');
   });
 
   /* ---------------- 格式 ---------------- */
 
   function syncFormatUI() {
     const value = ui.format.value;
-    const lossy = value === 'mp3' || value === 'ogg';
+    const lossy = value === 'mp3' || value === 'ogg' || value === 'm4a';
     setFieldVisible(ui.bitrateField, lossy);
     if (lossy) {
-      ui.bitrateField.querySelector('label').textContent = value === 'mp3' ? 'MP3 码率' : 'OGG 码率';
+      ui.bitrateField.querySelector('label').textContent =
+        value === 'mp3' ? 'MP3 码率' : value === 'ogg' ? 'OGG 码率' : 'M4A 码率';
     }
 
     const flacOption = ui.format.querySelector('option[value="flac"]');
     if (flacOption) flacOption.disabled = sourceFormat !== 'flac';
+    const oggOption = ui.format.querySelector('option[value="ogg"]');
+    if (oggOption) oggOption.disabled = !oggSupported;
+    const m4aOption = ui.format.querySelector('option[value="m4a"]');
+    if (m4aOption) m4aOption.disabled = !m4aSupported;
 
     if (value === 'flac') {
       ui.formatHint.textContent = '源文件本身就是 FLAC，直接原样保留，不重新编码（无损）。';
+    } else if (value === 'm4a') {
+      ui.formatHint.textContent = m4aSupported
+        ? 'AAC 编码，由浏览器实时录制生成；标签与封面会写入 MP4 元数据。'
+        : '当前浏览器不支持 MP4/AAC 录制，换 Chrome / Edge 试试。';
     } else if (sourceFormat === 'flac') {
       ui.formatHint.textContent = '源文件是 FLAC；选 FLAC 可无损原样保留，选其它格式会重新编码。';
     } else if (!oggSupported && value === 'ogg') {
@@ -489,11 +676,19 @@ export function initAudio() {
   /* ---------------- 载入 ---------------- */
 
   async function loadFile(f) {
-    ui.status.textContent = '正在读取…';
+    ui.status.textContent = '';
     clearNode(ui.notice);
     stopPlayback();
     output = null;
     ui.result.hidden = true;
+
+    // 导入进度：大文件读取 + 解密 + 解码要几秒，先让用户看到反馈
+    if (ui.importBox) {
+      ui.importBox.hidden = false;
+      ui.importText.textContent = '正在读取文件…';
+      ui.drop.classList.add('busy');
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    }
 
     try {
       let raw = new Uint8Array(await f.arrayBuffer());
@@ -501,7 +696,7 @@ export function initAudio() {
       let extra = null;
 
       if (isNcm(raw)) {
-        ui.status.textContent = '正在解密 .ncm…';
+        if (ui.importText) ui.importText.textContent = '正在解密 .ncm…';
         const ncm = parseNcm(raw);
         raw = null;
         sourceBytes = ncm.audio;
@@ -515,8 +710,9 @@ export function initAudio() {
 
       if (!sourceFormat) throw new Error('无法识别这个音频格式');
 
+      if (ui.importText) ui.importText.textContent = '正在解码音频…';
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
       const ac = ensureCtx();
-      ui.status.textContent = '正在解码…';
       const decoded = await ac.decodeAudioData(sourceBytes.slice().buffer);
       buffer = decoded;
       file = f;
@@ -524,28 +720,28 @@ export function initAudio() {
       sel = { start: 0, end: decoded.duration };
 
       // 标签：NCM 用自带的；其它格式从文件里读
+      const info = readAudioTags(sourceBytes, f.name);
       if (byteSource === 'ncm') {
+        const pictures = extra.cover
+          ? [{ type: 3, bytes: extra.cover.bytes, mime: extra.cover.mime, width: 0, height: 0 }]
+          : [];
         setTags({
           title: extra.metadata.title,
           artist: extra.metadata.artist,
           album: extra.metadata.album,
-          cover: extra.cover ? { ...extra.cover, width: 0, height: 0 } : null,
+          pictures,
         });
-        if (extra.cover) {
-          try {
-            const bmp = await createImageBitmap(new Blob([extra.cover.bytes], { type: extra.cover.mime }));
-            tags.cover.width = bmp.width;
-            tags.cover.height = bmp.height;
-            bmp.close && bmp.close();
-          } catch { /* ignore */ }
-        }
       } else {
-        const info = readAudioTags(sourceBytes, f.name);
-        setTags({ title: info.title, artist: info.artist, album: info.album, cover: info.cover });
+        setTags({
+          title: info.title,
+          artist: info.artist,
+          album: info.album,
+          pictures: info.pictures,
+        });
       }
 
-      // 源采样率从文件头读（解码会被 AudioContext 重采样，12k/96k 文件会变成 48k）
-      const probe = readAudioTags(sourceBytes, f.name);
+      // 源采样率从文件头读（解码会被 AudioContext 重采样，96k 文件会变成 48k）
+      const probe = info;
       const srcRate = probe.sampleRate || decoded.sampleRate;
       const srcChannels = probe.channels || decoded.numberOfChannels;
       const rateNote = srcRate === decoded.sampleRate ? fmtKhz(srcRate) : `${fmtKhz(srcRate)}（解码 ${fmtKhz(decoded.sampleRate)}）`;
@@ -578,11 +774,15 @@ export function initAudio() {
       }
 
       chooseDefaultFormat();
+      syncSeek();
       updateSelLabel();
       requestAnimationFrame(draw);
     } catch (err) {
       ui.status.textContent = '';
       showError(ui.notice, new Error('无法读取这个音频：' + (err.message || err)));
+    } finally {
+      if (ui.importBox) ui.importBox.hidden = true;
+      ui.drop.classList.remove('busy');
     }
   }
 
@@ -597,7 +797,7 @@ export function initAudio() {
     sourceFormat = '';
     sourceRate = 0;
     sourceChannels = 0;
-    if (coverUrl) { URL.revokeObjectURL(coverUrl); coverUrl = ''; }
+    releasePicUrls();
     setTags({});
     ui.fileinfo.hidden = true;
     ui.tagsEditor.hidden = true;
@@ -605,6 +805,8 @@ export function initAudio() {
     ui.settings.hidden = true;
     ui.result.hidden = true;
     ui.drop.hidden = false;
+    ui.drop.classList.remove('busy');
+    if (ui.importBox) ui.importBox.hidden = true;
     ui.run.disabled = true;
     ui.status.textContent = '';
     ui.bar.style.width = '0%';
@@ -654,7 +856,7 @@ export function initAudio() {
       title: tags.title.trim(),
       artist: tags.artist.trim(),
       album: tags.album.trim(),
-      cover: tags.cover,
+      pictures: tags.pictures.map((pic) => ({ ...pic })),
     };
   }
 
@@ -704,26 +906,38 @@ export function initAudio() {
           bytes = await encodeOggOpus(ab, {
             bitrate: (Number(ui.bitrate.value) || 192) * 1000,
             tags: writeTags,
-            cover: writeTags.cover,
+            pictures: writeTags.pictures,
             onProgress: (p) => { ui.bar.style.width = Math.round(p * 100) + '%'; },
           });
+        } else if (format === 'm4a') {
+          const ab = ctx.createBuffer(channels.length, channels[0].length, sampleRate);
+          channels.forEach((data, c) => ab.copyToChannel(data, c));
+          const raw = await encodeM4a(ab, Number(ui.bitrate.value) || 192, (p) => {
+            ui.bar.style.width = Math.round(p * 100) + '%';
+          });
+          bytes = writeMp4Tags(raw, writeTags);
         } else {
           throw new Error('不支持的导出格式');
         }
       }
 
       const filename = `${baseName(file.name)}-${fmtTime(sel.start).replace(/[:.]/g, '')}-${fmtTime(sel.end).replace(/[:.]/g, '')}.${ext}`;
-      const blob = new Blob([bytes], { type: format === 'mp3' ? 'audio/mpeg' : format === 'ogg' ? 'audio/ogg' : format === 'flac' ? 'audio/flac' : 'audio/wav' });
+      const mime = format === 'mp3' ? 'audio/mpeg'
+        : format === 'ogg' ? 'audio/ogg'
+          : format === 'flac' ? 'audio/flac'
+            : format === 'm4a' ? 'audio/mp4' : 'audio/wav';
+      const blob = new Blob([bytes], { type: mime });
       output = { blob, filename };
 
       appendMeta(ui.metaList, [
         ['片段', `${fmtTime(sel.start)} → ${fmtTime(sel.end)}（${fmtTime(durationSec)}）`],
         ['格式', format === 'mp3' ? `MP3 ${ui.bitrate.value} kbps`
           : format === 'ogg' ? `OGG · Opus ${ui.bitrate.value} kbps`
-            : format === 'flac' ? 'FLAC（原样保留）' : 'WAV 16-bit PCM（无损）'],
+            : format === 'm4a' ? `M4A · AAC ${ui.bitrate.value} kbps`
+              : format === 'flac' ? 'FLAC（原样保留）' : 'WAV 16-bit PCM（无损）'],
         ['参数', `${fmtKhz(format === 'flac' ? sourceRate : buffer.sampleRate)} · ${format === 'flac' ? sourceChannels : buffer.numberOfChannels} 声道`],
         ['标签', [writeTags.title, writeTags.artist, writeTags.album].filter(Boolean).join(' / ') || '无'],
-        ['封面', writeTags.cover ? '已写入' : '无'],
+        ['封面', writeTags.pictures.length ? `已写入 ${writeTags.pictures.length} 张` : '无'],
         ['体积', fmtBytes(bytes.length)],
       ]);
       ui.titleOut.textContent = filename;

@@ -1,6 +1,9 @@
 push.bat
 临时文件/
 
+# 本地会话日志（不是站点内容）
+session*.jsonl
+
 # 系统 / 编辑器垃圾文件
 Thumbs.db
 desktop.ini
