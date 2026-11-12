@@ -217,6 +217,8 @@ export function initAudio() {
     importText: $('#audio-import-text', root),
     tagsEditor: $('#audio-tags', root),
     pics: $('#audio-pics', root),
+    picPreview: $('#audio-pic-preview', root),
+    picPreviewEmpty: $('#audio-pic-preview-empty', root),
     picType: $('#audio-pic-type', root),
     picAdd: $('#audio-pic-add', root),
     picFile: $('#audio-pic-file', root),
@@ -267,6 +269,7 @@ export function initAudio() {
   let sourceChannels = 0;
   let tags = { title: '', artist: '', album: '', pictures: [] };
   let picUrls = [];
+  let selectedPic = 0;
   let oggSupported = false;
   let m4aSupported = false;
 
@@ -535,27 +538,48 @@ export function initAudio() {
     picUrls = [];
   }
 
+  function renderPicPreview() {
+    if (!ui.picPreview) return;
+    const pic = tags.pictures[selectedPic];
+    if (pic) {
+      const url = URL.createObjectURL(new Blob([pic.bytes], { type: pic.mime || 'image/jpeg' }));
+      picUrls.push(url);
+      ui.picPreview.src = url;
+      ui.picPreview.hidden = false;
+      if (ui.picPreviewEmpty) ui.picPreviewEmpty.hidden = true;
+    } else {
+      ui.picPreview.removeAttribute('src');
+      ui.picPreview.hidden = true;
+      if (ui.picPreviewEmpty) ui.picPreviewEmpty.hidden = false;
+    }
+  }
+
   function renderPictures() {
     releasePicUrls();
-    clearNode(ui.pics);
+    ui.pics.replaceChildren();
     if (!tags.pictures.length) {
+      selectedPic = 0;
       const empty = document.createElement('p');
       empty.className = 'pics-empty';
       empty.textContent = '没有内嵌图片，可以用下面「添加图片」补上正面封面 / 封底 / 艺人图 / 插图。';
       ui.pics.append(empty);
+      renderPicPreview();
       return;
     }
+    if (selectedPic >= tags.pictures.length) selectedPic = tags.pictures.length - 1;
+    if (selectedPic < 0) selectedPic = 0;
 
     tags.pictures.forEach((pic, index) => {
       const card = document.createElement('figure');
-      card.className = 'pic-card';
+      card.className = 'pic-card' + (index === selectedPic ? ' active' : '');
+      card.title = '点击预览这张图';
 
       const img = document.createElement('img');
       const url = URL.createObjectURL(new Blob([pic.bytes], { type: pic.mime || 'image/jpeg' }));
       picUrls.push(url);
       img.src = url;
       img.alt = '图片 ' + (index + 1);
-      img.loading = 'lazy';
+      img.decoding = 'async';
 
       const select = document.createElement('select');
       select.setAttribute('aria-label', '图片用途');
@@ -566,6 +590,7 @@ export function initAudio() {
         if ((pic.type || 3) === item.value) option.selected = true;
         select.append(option);
       }
+      select.addEventListener('click', (e) => e.stopPropagation());
       select.addEventListener('change', () => {
         pic.type = Number(select.value) || 0;
       });
@@ -576,14 +601,24 @@ export function initAudio() {
       del.title = '移除这张图';
       del.setAttribute('aria-label', '移除这张图');
       del.textContent = '×';
-      del.addEventListener('click', () => {
+      del.addEventListener('click', (e) => {
+        e.stopPropagation();
         tags.pictures.splice(index, 1);
+        if (selectedPic > index) selectedPic -= 1;
+        renderPictures();
+      });
+
+      card.addEventListener('click', () => {
+        selectedPic = index;
         renderPictures();
       });
 
       card.append(img, select, del);
       ui.pics.append(card);
     });
+
+    // 缩略图 url 交给浏览器缓存复用，预览单独再建一个
+    renderPicPreview();
   }
 
   function setTags(next) {
@@ -593,6 +628,7 @@ export function initAudio() {
       album: next.album || '',
       pictures: (next.pictures || []).map((pic) => ({ ...pic })),
     };
+    selectedPic = 0;
     ui.title.value = tags.title;
     ui.artist.value = tags.artist;
     ui.album.value = tags.album;
@@ -921,7 +957,7 @@ export function initAudio() {
         }
       }
 
-      const filename = `${baseName(file.name)}-${fmtTime(sel.start).replace(/[:.]/g, '')}-${fmtTime(sel.end).replace(/[:.]/g, '')}.${ext}`;
+      const filename = `${baseName(file.name)}.${ext}`;
       const mime = format === 'mp3' ? 'audio/mpeg'
         : format === 'ogg' ? 'audio/ogg'
           : format === 'flac' ? 'audio/flac'

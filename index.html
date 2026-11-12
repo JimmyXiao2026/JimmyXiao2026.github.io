@@ -815,54 +815,41 @@ window.setTimeout(function () {
     e.preventDefault();
 
     var ua = navigator.userAgent || '';
-    var platform = navigator.platform || '';
     var uad = navigator.userAgentData || null;
     var uadPlatform = uad && uad.platform ? uad.platform : '';
 
-    // 多路判断：UA 字符串 + navigator.platform + UA-CH，任一命中即可
-    var isIOS = /iPhone|iPad|iPod/i.test(ua)
-      || /iPad|iPhone|iPod/.test(platform)
-      || uadPlatform === 'iOS';
-    var isWindows = /Windows NT|Windows Phone|Win64|Win32|WOW64/i.test(ua)
-      || /^Win/i.test(platform)
-      || uadPlatform === 'Windows';
+    // 只保留安卓的深链，其它平台一律复制号码，避免外部协议被浏览器拦掉
+    var isAndroid = /Android/i.test(ua) || uadPlatform === 'Android';
 
-    function launch(url, tip) {
-      say(tip);
-      var left = false;
-      var onLeave = function () { left = true; };
-      window.addEventListener('blur', onLeave);
-      document.addEventListener('visibilitychange', onLeave);
-      try {
-        window.location.href = url;
-      } catch (err) {
-        /* 某些浏览器会直接抛错，下面统一走兜底 */
-      }
-      setTimeout(function () {
-        window.removeEventListener('blur', onLeave);
-        document.removeEventListener('visibilitychange', onLeave);
-        // 页面还在前台，说明 QQ 没被拉起来，那就把号码给用户
-        if (left || document.visibilityState === 'hidden') return;
-        copyText(QQ)
-          .then(function () { say('没检测到 QQ 客户端，号码已复制：' + QQ); })
-          .catch(function () { say('QQ 号：' + QQ + '（请手动复制）'); });
-      }, 2500);
+    function copyOnly() {
+      copyText(QQ)
+        .then(function () { say('QQ 号已复制：' + QQ); })
+        .catch(function () { say('QQ 号：' + QQ + '（复制失败，请手动复制）'); });
     }
 
-    if (isIOS) {
-      launch('mqqapi://card/show_pslcard?src_type=internal&version=1&uin=' + QQ
-        + '&card_type=person&source=sharecard', '正在唤起手机 QQ…');
-      return;
-    }
-    if (isWindows) {
-      launch('tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=' + QQ, '正在唤起 QQ…');
+    if (!isAndroid) {
+      copyOnly();
       return;
     }
 
-    // 其它平台（macOS / Linux / Android 等）：直接复制号码
-    copyText(QQ)
-      .then(function () { say('QQ 号已复制：' + QQ); })
-      .catch(function () { say('QQ 号：' + QQ + '（复制失败，请手动复制）'); });
+    // 安卓：尝试拉起手机 QQ 名片页，拉不起来就把号码复制给用户
+    say('正在唤起手机 QQ…');
+    var left = false;
+    var onLeave = function () { left = true; };
+    window.addEventListener('blur', onLeave);
+    document.addEventListener('visibilitychange', onLeave);
+    try {
+      window.location.href = 'mqqapi://card/show_pslcard?src_type=internal&version=1&uin=' + QQ
+        + '&card_type=person&source=sharecard';
+    } catch (err) {
+      /* 某些浏览器会直接抛错，交给下面的兜底 */
+    }
+    setTimeout(function () {
+      window.removeEventListener('blur', onLeave);
+      document.removeEventListener('visibilitychange', onLeave);
+      if (left || document.visibilityState === 'hidden') return;
+      copyOnly();
+    }, 2500);
   });
 })();
 </script>

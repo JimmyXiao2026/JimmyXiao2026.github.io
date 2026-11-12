@@ -133,6 +133,7 @@ export function initNcmBatch() {
     pickDir: $('#ncm-pick-dir', panel),
     count: $('#ncm-count', panel),
     format: $('#ncm-format', panel),
+    nameMode: $('#ncm-name', panel),
     hint: $('#ncm-hint', panel),
     rows: $('#ncm-rows', panel),
     run: $('#run-ncm', panel),
@@ -154,7 +155,7 @@ export function initNcmBatch() {
   }
 
   function renderRows() {
-    clearNode(ui.rows);
+    ui.rows.replaceChildren();
     ui.rows.hidden = !items.length;
     items.forEach((item, index) => {
       const li = document.createElement('li');
@@ -365,8 +366,13 @@ export function initNcmBatch() {
           }
 
           const artistText = String(artist || '').replace(/\s*\/\s*/g, ', ');
-          const base = safeName([artistText, title].filter(Boolean).join(' - ')
-            || item.file.name.replace(/\.[^.]+$/, ''));
+          const fallback = item.file.name.replace(/\.[^.]+$/, '');
+          const mode = ui.nameMode ? ui.nameMode.value : 'keep';
+          let base = fallback;
+          if (mode === 'title') base = title || fallback;
+          else if (mode === 'artist-title') base = [artistText, title].filter(Boolean).join(' - ') || fallback;
+          else if (mode === 'title-artist') base = [title, artistText].filter(Boolean).join(' - ') || fallback;
+          base = safeName(base);
           let name = `${base}.${ext}`;
           let seq = 2;
           while (used.has(name)) name = `${base} (${seq++}).${ext}`;

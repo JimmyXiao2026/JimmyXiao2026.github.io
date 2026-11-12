@@ -403,10 +403,27 @@
   .tag-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,124,248,.16); }
   .tag-fields .tech { font-size: 0.74rem; color: var(--text-faint); line-height: 1.6; margin: 0; }
 
-  .pics-box { display: flex; flex-direction: column; gap: 10px; }
+  .pics-box { display: flex; flex-direction: row; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .pics-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .pic-preview {
+    width: 168px;
+    height: 168px;
+    border-radius: 12px;
+    border: 1px solid var(--stroke);
+    background: rgba(255, 255, 255, .04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex: none;
+  }
+  .pic-preview img { width: 100%; height: 100%; object-fit: contain; }
+  .pic-preview-empty { color: var(--text-faint); font-size: 0.76rem; }
   .pics { display: flex; flex-wrap: wrap; gap: 10px; }
   .pic-add-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pic-add-label { font-size: 0.74rem; color: var(--text-faint); }
   .pic-add-row select {
+    max-width: 150px;
     padding: 6px 10px;
     border-radius: 8px;
     border: 1px solid var(--stroke);
@@ -424,6 +441,11 @@
     background: rgba(255, 255, 255, .04);
     border: 1px solid var(--stroke);
     text-align: center;
+    cursor: pointer;
+  }
+  .pic-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(139, 124, 248, .28);
   }
   .pic-card img {
     width: 104px;
@@ -925,17 +947,24 @@
           <p class="tech" id="audio-tech"></p>
         </div>
         <div class="pics-box">
-          <div class="pics" id="audio-pics"></div>
-          <div class="pic-add-row">
-            <select id="audio-pic-type" aria-label="新图片用途">
-              <option value="3">正面封面</option>
-              <option value="4">封底</option>
-              <option value="8">艺人图</option>
-              <option value="18">插图</option>
-              <option value="0">其他</option>
-            </select>
-            <button class="chip" type="button" id="audio-pic-add">添加图片</button>
-            <input type="file" id="audio-pic-file" accept="image/*" multiple hidden>
+          <div class="pic-preview" id="audio-pic-preview-box">
+            <img id="audio-pic-preview" alt="封面预览" hidden>
+            <span class="pic-preview-empty" id="audio-pic-preview-empty">暂无图片</span>
+          </div>
+          <div class="pics-col">
+            <div class="pics" id="audio-pics"></div>
+            <div class="pic-add-row">
+              <span class="pic-add-label">新增</span>
+              <select id="audio-pic-type" aria-label="新图片用途">
+                <option value="3">正面封面</option>
+                <option value="4">封底</option>
+                <option value="8">艺人图</option>
+                <option value="18">插图</option>
+                <option value="0">其他</option>
+              </select>
+              <button class="chip" type="button" id="audio-pic-add">添加图片</button>
+              <input type="file" id="audio-pic-file" accept="image/*" multiple hidden>
+            </div>
           </div>
         </div>
       </div>
@@ -1052,6 +1081,16 @@
             <option value="ogg">统一 OGG（Opus）</option>
           </select>
           <span class="hint" id="ncm-hint"></span>
+        </div>
+        <div class="field">
+          <label for="ncm-name">文件名</label>
+          <select id="ncm-name">
+            <option value="keep" selected>不改变文件名</option>
+            <option value="title">歌曲名</option>
+            <option value="artist-title">歌手-歌曲名</option>
+            <option value="title-artist">歌曲名-歌手</option>
+          </select>
+          <span class="hint" id="ncm-name-hint">后三项读取歌曲元数据（标题 / 艺术家）</span>
         </div>
       </div>
 
